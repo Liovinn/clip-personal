@@ -132,7 +132,7 @@ tail -n 80 /workspace/clip-personal/.cache/vast/renderer.log
 tail -n 80 /workspace/clip-personal/.cache/vast/frontend.log
 
 # Restart the running services without reinstalling.
-supervisorctl restart 'openshorts-*'
+bash /workspace/clip-personal/ops/vast/start-services.sh
 
 # Pull your latest GitHub version, install changed dependencies, and restart.
 bash /workspace/clip-personal/ops/vast/bootstrap.sh
@@ -146,3 +146,9 @@ fails, read the error; do not assume that a visible GPU means CUDA/NVENC works.
 This setup is prepared for Vast's Linux x86_64 CUDA image. Local source builds,
 script checks and CI validate the code; the first real Vast GPU launch still
 needs a smoke test with your chosen offer.
+
+If setup reports that another program is listening while starting Supervisor,
+the base image may already have a working Supervisor with a failed or stopped
+optional service. OpenShorts checks the daemon's PID rather than treating those
+other services as a daemon failure. It reuses the base image's Supervisor and
+updates only the three OpenShorts services.

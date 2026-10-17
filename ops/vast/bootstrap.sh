@@ -104,12 +104,7 @@ stdout_logfile_backups=2
 redirect_stderr=true
 EOF
 done
-if ! supervisorctl status >/dev/null 2>&1; then
-  supervisord -c /etc/supervisor/supervisord.conf 9>&-
-fi
-supervisorctl reread
-supervisorctl update
-supervisorctl restart 'openshorts-*'
+bash ops/vast/start-services.sh
 
 for port_path in '8000/health/ready' '3100/health' '5175/api/config'; do
   ready=0
