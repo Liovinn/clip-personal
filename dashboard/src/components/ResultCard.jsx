@@ -757,6 +757,7 @@ export default function ResultCard({ clip, index, jobId, durable, uploadPostKey,
                 <video
                     ref={videoRef}
                     src={playbackUrl}
+                    preload="metadata"
                     controls
                     className="w-full h-full object-contain"
                     playsInline

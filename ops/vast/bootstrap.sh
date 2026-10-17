@@ -114,5 +114,6 @@ for port_path in '8000/health/ready' '3100/health' '5175/api/config'; do
   done
   [[ $ready == 1 ]] || { echo "Service $port_path failed; check .cache/vast/*.log" >&2; exit 1; }
 done
-echo 'OpenShorts is ready. Forward SSH port 5175, then open http://localhost:15175/#app.'
+echo 'OpenShorts is ready. Open the authenticated OpenShorts link in the Vast Instance Portal.'
+echo 'SSH fallback: forward port 5175 and open http://localhost:15175/#app.'
 echo 'Add your Gemini key in Settings. Download finished clips before destroying this instance.'

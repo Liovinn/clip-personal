@@ -6,26 +6,42 @@ Vast container. There is no nested Docker or Docker Compose requirement.
 
 ## 1. Save this template once
 
-Create a custom template in Vast and name it **OpenShorts Personal — CUDA 12.8**.
+Create a custom template in Vast and name it **OpenShorts Personal — Browser**.
+These access and delivery settings keep the existing GPU processing setup.
 
 | Template field | Value |
 | --- | --- |
 | Docker image | `vastai/base-image:cuda-12.8.1-cudnn-devel-ubuntu24.04-py311` |
-| Launch mode | **Jupyter + SSH** |
+| Launch mode | **Entrypoint** (use the image's default entrypoint) |
 | Environment variable | `NVIDIA_DRIVER_CAPABILITIES=compute,video,utility` |
 | Environment variable | `PROVISIONING_SCRIPT=https://raw.githubusercontent.com/Liovinn/clip-personal/main/ops/vast/bootstrap.sh` |
-| Additional app ports | None; access the app through SSH |
-| On-start script | Paste the block below |
+| Environment variable | `ENABLE_HTTPS=true` |
+| Environment variable | `ENABLE_AUTH=true` |
+| Environment variable | `PORTAL_CONFIG=localhost:1111:11111:/:Instance Portal\|localhost:8080:18080:/:Jupyter\|localhost:5176:5175:/:OpenShorts` |
+| Environment variable | `VITE_EXTRA_ALLOWED_HOSTS=.trycloudflare.com` |
+| Ports, TCP | **22, 1111, 8080, 5176** |
+| On-start script / command override | Leave empty; preserve the image's default entrypoint |
 
-```bash
-/opt/instance-tools/bin/entrypoint.sh
-```
+Enter each environment variable in a separate Key/Value row without `=` or
+quotes. The PORTAL_CONFIG value uses plain `|` separators, without backslashes.
+[Copyable non-secret settings](../ops/vast/template.env.example).
 
-Use the existing Jupyter/SSH port settings supplied by Vast's template editor.
-Set On-start to the command above: it initializes the selected Vast base image,
-which then downloads and runs `PROVISIONING_SCRIPT` after Supervisor starts.
+For explicit Docker port options, these are:
+`-p 22:22 -p 1111:1111 -p 8080:8080 -p 5176:5176`.
+Vast assigns the external public ports. Do not publicly expose backend 8000,
+renderer 3100, or the unauthenticated frontend 5175.
+
+The image's native entrypoint initializes its portal, HTTPS, and authentication,
+then downloads and runs `PROVISIONING_SCRIPT` after Supervisor starts.
 The base image records successful provisioning and reuses it on later boots;
 Supervisor automatically starts the installed OpenShorts services again.
+Entrypoint mode avoids starting an extra Jupyter process alongside the base
+image's own Jupyter service. The OpenShorts entry proxies external port 5176 to
+the existing loopback frontend on 5175, without changing its processing services.
+
+Keep `ENABLE_AUTH=true` and leave `AUTH_EXCLUDE` unset. Vast's Open button supplies
+the access cookie; its default Basic Auth username is `vastai`, with the generated
+instance token as the password. Keep that token out of GitHub and screenshots.
 
 If provisioning fails or you want to run setup manually, use this in the
 instance's root terminal after fixing the reported error:
@@ -75,14 +91,32 @@ Rent your saved template. Initial installation and first model downloads take
 time and use rented resources. Follow progress in Vast's instance logs or terminal.
 The installer prints **OpenShorts is ready** only after all three services respond.
 
-## 3. Connect privately from Windows
+## 3. Open in your browser
+
+1. Wait for **OpenShorts is ready** in the instance logs.
+2. Click **Open** on the Vast instance card to enter the Instance Portal.
+3. Open its **OpenShorts** entry. The direct link uses HTTPS and the mapped
+   external port for internal port **5176**. No local server or SSH window is
+   needed for this route.
+4. Use the authenticated direct link for large downloads. The optional Cloudflare
+   link is another route to test, rather than an assumed speed improvement.
+
+Vast uses its own TLS certificate. Follow the [Vast Jupyter TLS setup](https://docs.vast.ai/guides/instances/connect/jupyter)
+if the browser does not trust it. Authentication must be active before sending
+an API key or processing a URL. Confirm that an unauthenticated request to the
+OpenShorts address is rejected or sent to the Vast login page.
+
+If the portal's Caddy service fails, inspect its log. Do not work around it by
+exposing the plain frontend; use the private SSH fallback below until fixed.
+
+### SSH fallback from Windows
 
 Add your SSH public key to Vast. On the instance card, choose **Connect** and copy
 its SSH host, user, and port. In PowerShell run the following, replacing the three
 uppercase placeholders with those connection details:
 
 ```powershell
-ssh -N -p SSH_PORT -L 15175:127.0.0.1:5175 SSH_USER@SSH_HOST
+ssh -N -o ExitOnForwardFailure=yes -o ServerAliveInterval=30 -o ServerAliveCountMax=3 -p SSH_PORT -L 15175:127.0.0.1:5175 SSH_USER@SSH_HOST
 ```
 
 Keep that PowerShell window open, then visit:
@@ -91,7 +125,7 @@ Keep that PowerShell window open, then visit:
 
 Port 15175 avoids the local OpenShorts instance on port 5175. This tunnel carries
 the dashboard and its backend requests. No public app URL or domain is required.
-All three application services bind to loopback. The SSH hostname and port can
+All three application services still bind to loopback. The SSH hostname and port can
 change for each new rental; reuse the saved template but use the new connection
 details. [Vast SSH guide](https://docs.vast.ai/guides/instances/connect/ssh)
 
@@ -100,7 +134,69 @@ details. [Vast SSH guide](https://docs.vast.ai/guides/instances/connect/ssh)
 1. Open **Settings** and enter your Gemini API key.
 2. Open **Clip Generator → Video URL**, paste a source URL and choose **Generate Clips**.
 3. Process one video at a time. The saved setup limits concurrency to one.
-4. Download the clips you want and verify the downloads play correctly.
+4. Choose **download all**. The server prepares a ZIP of the current clips;
+   **preparing ZIP** ends when that ZIP is ready, before the file transfer.
+5. Watch the browser's **Downloads** panel for bytes, speed, pause, resume, and
+   completion. The app shows the ZIP size and hands the transfer to the browser
+   instead of buffering the entire file in browser memory.
+6. Verify the completed ZIP opens and the clips play correctly.
+
+The server keeps the ZIP for retries and range requests until the job is purged
+or the instance is destroyed. Clicking again reuses it unless the clip files
+changed. Editing a clip creates a different archive and keeps the older one
+available for an existing transfer. A deleted instance cannot resume a download.
+
+### Save to Google Drive (optional)
+
+This transfers **Vast -> Google Drive**, without routing video bytes through your
+computer. It does not publish anything to social media or make files public.
+
+1. In Vast **Settings -> Cloud Connections**, connect Google Drive. Vast recommends
+   a dedicated Google account because the connection is at account level. Use a
+   Secure Cloud host for Cloud Sync. [Vast Cloud Sync guide](https://docs.vast.ai/guides/instances/storage/cloud-sync).
+2. Find the Drive connection's ID with `vastai show connections` in an authorized
+   Vast CLI session. Add **OPENSHORTS_DRIVE_CONNECTION_ID** with that numeric ID
+   to your private saved template before the next rental. This ID is not a key.
+3. The instance supplies its own `CONTAINER_ID` and `CONTAINER_API_KEY`; the app
+   never sends the key to the browser or puts it into the ZIP. No full-account
+   Vast API key or Google token is requested by OpenShorts.
+4. After processing, choose **save to Drive**. OpenShorts prepares the same ZIP
+   and requests Vast Cloud Copy for a folder containing only that ZIP. Original
+   videos, transcripts, metadata, and API keys are excluded.
+5. **Upload requested is not upload complete.** Check the instance's Cloud Copy
+   status in Vast for completion, then open Drive and verify the ZIP exists and
+   has the expected size before destroying the instance. The app shows its
+   destination under `OpenShorts/<job>/<export-version>/`.
+
+The copy endpoint may reject the instance key depending on account/instance
+permissions. If so, use **Cloud Copy** on the Vast instance card instead: choose
+Instance To Cloud and your Google Drive connection, use the prepared ZIP's
+isolated source directory under
+`/workspace/clip-personal/output/<job>/.exports/drive/<archive-id>/`, and choose
+the destination in Drive. Never copy the entire application folder.
+
+Drive export is optional, available only in self-host mode, and starts only when
+you click it. It is separate from video generation and never changes the rendered
+clips. Vast bandwidth charges and your Drive storage limits still apply.
+
+### Compare transfer routes on your next rental
+
+Use the same prepared ZIP to compare the direct HTTPS link and the SSH fallback.
+Pause other downloads/video previews while measuring. The optional helper below
+reads only an 8 MiB range, displays transfer speed and checks that resume is
+supported. For the gateway, supply `--username vastai`; it prompts for the
+instance password without printing it or storing it in the repository.
+
+```bash
+python ops/vast/benchmark-download.py 'PREPARED_ZIP_URL' --username vastai
+```
+
+Use your local Python to measure the path to your computer; run it on Vast against
+the loopback address to measure server delivery alone. Get the ZIP URL from the
+browser's download details, and keep any signed query parameters private. Compare
+with Drive's browser download speed after a verified server-to-Drive upload.
+No speed improvement is guaranteed: host upload, routing, and your own connection
+can each limit a transfer. Choosing another GPU does not fix network bandwidth.
 
 For ordinary clipping and subtitles you need Gemini (or a separately configured
 local LLM), not ElevenLabs, fal.ai, or Upload-Post. Social publishing is optional
@@ -115,7 +211,8 @@ guarantee every website will allow its videos to be downloaded.
 
 ## 5. Finish the session
 
-Download and check your finished files, then choose **Destroy** in Vast.
+Download and check your finished files, or confirm the completed upload in Google
+Drive, then choose **Destroy** in Vast.
 Destroying deletes the instance's source videos, clips, installations and model
 cache. Stopping retains storage and its charges. The next rental repeats setup
 from your saved template and your GitHub version. [Vast storage lifecycle](https://docs.vast.ai/guides/reference/faq/instances)
@@ -143,9 +240,11 @@ are preserved: the updater stops if it finds uncommitted changes. Dependency
 installs are reused when the setup inputs have not changed. If the GPU check
 fails, read the error; do not assume that a visible GPU means CUDA/NVENC works.
 
-This setup is prepared for Vast's Linux x86_64 CUDA image. Local source builds,
-script checks and CI validate the code; the first real Vast GPU launch still
-needs a smoke test with your chosen offer.
+The existing CUDA processing setup has run on a Vast GPU. These new browser-access
+settings and the real Google Drive upload still need validation on the next
+rental; no new paid instance is created by this update. Local checks cover ZIP
+contents, caching, HTTP range requests, access checks, and the cloud-copy API
+contract. They do not measure your next host's real network performance.
 
 If setup reports that another program is listening while starting Supervisor,
 the base image may already have a working Supervisor with a failed or stopped

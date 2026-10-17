@@ -17,6 +17,24 @@
 - `GET /api/autopilot/videos`: latest uploads of the connected YouTube channel + what Autopilot did.
 - `POST /api/autopilot/run`: clip one channel video now (`{video_id}`).
 
+## Finished-clip delivery
+
+`POST /api/jobs/{job_id}/download-all` prepares a cached ZIP and returns its size
+and download URL. `GET /api/jobs/{job_id}/exports/{archive_id}` serves that exact
+archive with FileResponse range support. Cloud links use a scoped, expiring HMAC
+capability minted after the ownership check; session tokens never enter the URL.
+The old authenticated GET download-all endpoint remains available. ZIP files
+stay under the job's hidden `.exports` directory until normal job cleanup.
+Only the selected delivered clip files are included; packaging never renders
+video. File-version fingerprints prevent an edit from changing an active ZIP.
+
+The self-host-only `POST /api/jobs/{job_id}/export-drive` asks Vast Cloud Copy to
+upload an isolated ZIP folder to a configured Drive connection. It uses the
+instance-scoped key already supplied by Vast, accepts no arbitrary source paths
+or client-supplied credentials, and returns `submitted`, never `completed`.
+Actual completion must be verified in Vast and Drive. Connection setup, HTTPS
+gateway settings, and a route benchmark are in `docs/VAST_QUICKSTART.md`.
+
 ## API keys (`cloud/api_keys.py`)
 
 `osk_...` tokens, sha256-stored, created in the dashboard account page.

@@ -4,6 +4,7 @@ import KeyInput from './components/KeyInput';
 import MediaInput from './components/MediaInput';
 import McpConnectCard from './components/McpConnectCard';
 import ResultCard from './components/ResultCard';
+import JobDownloads from './components/JobDownloads';
 import ProcessingAnimation from './components/ProcessingAnimation';
 // import Gallery from './components/Gallery';
 import ThumbnailStudio from './components/ThumbnailStudio';
@@ -350,7 +351,6 @@ function App() {
   // Bulk subtitles: apply one style to every clip of the job (triggered from
   // within a clip's subtitle modal via "apply to all").
   const [bulkSub, setBulkSub] = useState({ running: false, current: 0, total: 0, errors: 0 });
-  const [downloadingAll, setDownloadingAll] = useState(false);
   // Pre-flight quality gate: { info: {max_height, min_height, cookies_invalid}, data }
   const [qualityGate, setQualityGate] = useState(null);
   const [logs, setLogs] = useState([]);
@@ -641,28 +641,6 @@ function App() {
       const data = await pollJob(jobId);
       if (data.result) setResults(data.result);
     } catch { /* keep current results */ }
-  };
-
-  const handleDownloadAll = async () => {
-    if (!jobId) return;
-    setDownloadingAll(true);
-    try {
-      const res = await apiFetch(`/api/jobs/${jobId}/download-all`);
-      if (!res.ok) throw new Error(await res.text());
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `openshorts_clips_${(jobId || '').slice(0, 8)}.zip`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-    } catch (e) {
-      alert(`Download failed: ${e.message}`);
-    } finally {
-      setDownloadingAll(false);
-    }
   };
 
   // Session Recovery: Restore on mount
@@ -2168,16 +2146,7 @@ function App() {
                   </h2>
                   {results?.clips?.length > 0 && status === 'complete' && (
                     <div className="flex flex-col sm:flex-row sm:justify-end items-stretch sm:items-center gap-2">
-                      <button
-                        onClick={handleDownloadAll}
-                        disabled={downloadingAll}
-                        className="btn-ghost px-3 py-2 text-xs"
-                        title="Download all clips as a ZIP"
-                      >
-                        {downloadingAll
-                          ? <><Loader2 size={14} className="animate-spin" />zipping…</>
-                          : <><Download size={14} />download all</>}
-                      </button>
+                      <JobDownloads key={jobId} jobId={jobId} allowDrive={!billingEnabled} />
                       {results.clips.length > 1 && (
                         <button
                           onClick={() => setShowScheduleWeek(true)}

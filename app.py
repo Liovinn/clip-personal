@@ -11,7 +11,7 @@ import glob
 import hashlib
 import hmac
 import time
-import zipfile
+import clip_exports
 import math
 import itertools
 import functools
@@ -3629,14 +3629,20 @@ async def get_source_video(job_id: str, request: Request,
     return FileResponse(source_path, media_type="video/mp4")
 
 
-@app.get("/api/jobs/{job_id}/download-all")
-async def download_all_clips(job_id: str, request: Request):
-    """Bundle the current version of every clip of a job into one ZIP."""
+async def _prepare_clip_export(job_id: str, request: Request):
+    """Select the same delivered clips as before, then cache their ZIP."""
+    try:
+        folder = clip_exports.job_directory(OUTPUT_DIR, job_id)
+    except ValueError as error:
+        raise HTTPException(status_code=404, detail="Job not found") from error
     await _ensure_job_files(job_id, request)
-    if job_id in jobs:
-        await _assert_job_owner(request, jobs[job_id])
+    record = _job_record(job_id)
+    if record is None and BILLING_ENABLED:
+        raise HTTPException(status_code=404, detail="Job not found")
+    if record is not None:
+        await _assert_job_owner(request, record)
 
-    output_dir = os.path.join(OUTPUT_DIR, job_id)
+    output_dir = str(folder)
     json_files = glob.glob(os.path.join(output_dir, "*_metadata.json"))
     if not json_files:
         raise HTTPException(status_code=404, detail="Job not found")
@@ -3660,29 +3666,118 @@ async def download_all_clips(job_id: str, request: Request):
         filename = (os.path.basename(url.split('/')[-1]) if url
                     else _canonical_clip_file(output_dir, base_name, i))
         path = os.path.join(output_dir, filename)
-        if filename and os.path.exists(path):
+        if (filename and os.path.isfile(path)
+                and _media_guard(f"{job_id}/{filename}")):
             files.append((i, path))
 
     if not files:
         raise HTTPException(status_code=404, detail="No clip files found for this job")
 
-    zip_path = os.path.join(output_dir, f"clips_{int(time.time())}.zip")
+    try:
+        archive_id, archive = await asyncio.to_thread(
+            clip_exports.prepare_archive, folder, files)
+    except ValueError as error:
+        raise HTTPException(status_code=409, detail=str(error)) from error
+    except OSError as error:
+        if error.errno == 28:
+            raise HTTPException(status_code=507, detail="Not enough server disk space to prepare the ZIP.") from error
+        raise
+    return archive_id, archive, len(files)
 
-    def build_zip():
-        # Videos are already compressed; store instead of deflate for speed.
-        with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_STORED) as zf:
-            for i, path in files:
-                zf.write(path, arcname=f"clip_{i + 1:02d}_{os.path.basename(path)}")
 
-    loop = asyncio.get_event_loop()
-    await loop.run_in_executor(None, build_zip)
-
+def _clip_export_response(job_id, archive):
     return FileResponse(
-        zip_path,
+        archive,
         media_type="application/zip",
         filename=f"openshorts_clips_{job_id[:8]}.zip",
-        background=BackgroundTask(os.remove, zip_path),
+        headers={"Cache-Control": "private, no-cache", "X-Content-Type-Options": "nosniff"},
     )
+
+
+@app.get("/api/jobs/{job_id}/download-all")
+async def download_all_clips(job_id: str, request: Request):
+    """Legacy authenticated download, now cached so retries can resume."""
+    _, archive, _ = await _prepare_clip_export(job_id, request)
+    return _clip_export_response(job_id, archive)
+
+
+@app.post("/api/jobs/{job_id}/download-all")
+async def prepare_download_all(job_id: str, request: Request):
+    """Small JSON response first; the browser downloads bytes separately."""
+    archive_id, archive, count = await _prepare_clip_export(job_id, request)
+    url = f"/api/jobs/{job_id}/exports/{archive_id}"
+    if BILLING_ENABLED:
+        exp = int(time.time()) + SOURCE_URL_TTL_SECONDS
+        sig = _source_signature(f"export:{job_id}:{archive_id}", exp)
+        url += f"?exp={exp}&sig={sig}"
+    return {"url": url, "archive_id": archive_id, "size_bytes": archive.stat().st_size,
+            "filename": f"openshorts_clips_{job_id[:8]}.zip", "clip_count": count}
+
+
+@app.get("/api/jobs/{job_id}/exports/{archive_id}")
+async def download_prepared_export(job_id: str, archive_id: str, request: Request,
+                                   exp: int = 0, sig: str = ""):
+    signed = (BILLING_ENABLED and sig and exp > time.time()
+              and hmac.compare_digest(sig, _source_signature(f"export:{job_id}:{archive_id}", exp)))
+    if BILLING_ENABLED and not signed:
+        record = _job_record(job_id)
+        if record is None:
+            raise HTTPException(status_code=404, detail="ZIP not found")
+        await _assert_job_owner(request, record)
+    try:
+        folder = clip_exports.job_directory(OUTPUT_DIR, job_id)
+        archive = clip_exports.archive_path(folder, archive_id)
+    except (ValueError, FileNotFoundError) as error:
+        raise HTTPException(status_code=404, detail="ZIP not found. Prepare the download again.") from error
+    return _clip_export_response(job_id, archive)
+
+
+def _drive_export_config():
+    connection = os.environ.get("OPENSHORTS_DRIVE_CONNECTION_ID", "")
+    instance = os.environ.get("CONTAINER_ID", "").removeprefix("C.")
+    key = os.environ.get("CONTAINER_API_KEY", "")
+    return connection, instance, key
+
+
+@app.get("/api/exports/drive-config")
+async def drive_export_config():
+    connection, instance, key = _drive_export_config()
+    return {"enabled": bool(not BILLING_ENABLED and connection.isdigit()
+                            and instance.isdigit() and key)}
+
+
+@app.post("/api/jobs/{job_id}/export-drive")
+async def export_clips_to_drive(job_id: str, request: Request):
+    """Ask Vast to copy only this finished ZIP to a preconnected Drive."""
+    if BILLING_ENABLED:
+        raise HTTPException(status_code=404, detail="Not found")
+    connection, instance, key = _drive_export_config()
+    if not connection.isdigit() or not instance.isdigit() or not key:
+        raise HTTPException(status_code=503, detail="Connect Google Drive in Vast and configure its connection ID first.")
+    archive_id, archive, _ = await _prepare_clip_export(job_id, request)
+    filename = f"openshorts_clips_{job_id[:8]}.zip"
+    source = await asyncio.to_thread(clip_exports.drive_source, archive.parent.parent,
+                                     archive_id, filename)
+    destination = f"OpenShorts/{job_id}/{archive_id[:12]}"
+    import httpx
+    try:
+        async with httpx.AsyncClient(timeout=30) as client:
+            response = await client.post(
+                "https://console.vast.ai/api/v0/commands/rclone/",
+                headers={"Authorization": f"Bearer {key}"},
+                json={"src": str(source), "dst": destination,
+                      "instance_id": instance, "selected": connection,
+                      "transfer": "Instance To Cloud", "flags": []})
+        body = response.json()
+    except (httpx.HTTPError, ValueError) as error:
+        raise HTTPException(status_code=502, detail="Could not confirm the transfer request. Check Cloud Copy in Vast before retrying.") from error
+    if response.status_code != 200 or not isinstance(body, dict) or body.get("success") is False:
+        raise HTTPException(status_code=502, detail="Vast did not accept the transfer. Check the Drive connection and instance key permissions; Cloud Copy is also available in the Vast console.")
+    # The API acknowledges submission, not upload completion. Never tell the
+    # user it is safe to destroy the instance based on this response alone.
+    return {"status": "submitted", "confirmed": False, "folder": destination,
+            "filename": filename, "size_bytes": archive.stat().st_size,
+            "console_url": "https://cloud.vast.ai/instances/"}
 
 
 # --- Project restore (paid mode) --------------------------------------------
