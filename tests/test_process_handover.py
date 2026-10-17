@@ -132,9 +132,11 @@ def test_session_with_missing_video_404s(dirs, session):
     assert resp.status_code == 404
 
 
-def test_handover_still_requires_attestation(dirs, session):
+def test_handover_does_not_require_attestation(dirs, session):
     resp = _post_process({"thumbnail_session_id": "sess1"})
-    assert resp.status_code == 400
+    assert resp.status_code == 200
+    job = app_module.jobs[resp.json()["job_id"]]
+    assert job["attestation"]["acknowledged"] is False
 
 
 def test_url_wins_over_session_id(dirs, session, monkeypatch):

@@ -3114,7 +3114,7 @@ async def process_endpoint(
     if "application/json" in content_type:
         body = await request.json()
         url = body.get("url")
-        ack_flag = bool(body.get("acknowledged"))
+        ack_flag = str(body.get("acknowledged")).lower() in ("1", "true", "yes")
         force_low = bool(body.get("force_low_quality"))
         output_format = body.get("output_format")
         layouts = body.get("layouts")
@@ -3171,9 +3171,6 @@ async def process_endpoint(
         except UnsafeURLError as e:
             raise HTTPException(status_code=400, detail=f"Invalid webhook_url: {e}")
 
-    if not ack_flag:
-        raise HTTPException(status_code=400, detail="You must confirm you own the content or have rights to process it.")
-
     if url and DISABLE_YOUTUBE_URL:
         raise HTTPException(status_code=403, detail="YouTube URL ingest is disabled on this deployment. Please upload a file you own.")
 
@@ -3183,14 +3180,15 @@ async def process_endpoint(
     if url:
         await _validate_source_url(url)
 
-    # Capture attestation context for legal record (IP + timestamp + UA)
+    # Preserve explicit acknowledgements from older clients without requiring
+    # one or recording an acknowledgement the caller never supplied.
     client_ip = request.client.host if request.client else "unknown"
     fwd = request.headers.get("x-forwarded-for")
     if fwd:
         client_ip = fwd.split(",")[0].strip()
     user_agent = request.headers.get("user-agent", "")
     attestation = {
-        "acknowledged": True,
+        "acknowledged": ack_flag,
         "ip": client_ip,
         "user_agent": user_agent,
         "timestamp": time.time(),
@@ -3354,7 +3352,7 @@ async def process_endpoint(
     if output_format and output_format != "auto":
         cmd.extend(["--format", output_format])
 
-    print(f"[attestation] job={job_id} ip={attestation['ip']} source={attestation['source']} ack=true")
+    print(f"[attestation] job={job_id} ip={attestation['ip']} source={attestation['source']} ack={ack_flag}")
 
     # Meter + reserve minutes for managed users (no-op for BYOK / self-host).
     user_id, priority, reservation_id, user_plan, partial = await reserve_process_minutes(

@@ -74,6 +74,34 @@ def test_long_url_source_passes(dirs, monkeypatch):
     assert resp.status_code == 200
 
 
+@pytest.mark.parametrize("source", ["url", "file"])
+@pytest.mark.parametrize("acknowledgement", [None, False, True])
+def test_processing_without_required_confirmation(dirs, monkeypatch, source, acknowledgement):
+    """Both dashboard input paths work without recording a false confirmation."""
+    monkeypatch.setattr(app_module, "jobs", {})
+    monkeypatch.setattr(app_module, "job_queue", asyncio.PriorityQueue())
+    _stub_probe(monkeypatch, duration=600)
+    monkeypatch.setattr(app_module, "_media_duration_seconds", lambda path: 600.0)
+
+    async def allow_url(url):
+        return None
+
+    monkeypatch.setattr(app_module, "_validate_source_url", allow_url)
+    fields = {} if acknowledgement is None else {"acknowledged": acknowledgement}
+    if source == "url":
+        resp = _post_process({"url": "https://example.com/video.mp4", **fields})
+    else:
+        resp = _post_process(
+            files={"file": ("video.mp4", b"fake-video", "video/mp4")},
+            data={key: str(value).lower() for key, value in fields.items()},
+        )
+
+    assert resp.status_code == 200, resp.text
+    job = app_module.jobs[resp.json()["job_id"]]
+    assert job["attestation"]["acknowledged"] is (acknowledgement is True)
+    assert app_module.job_queue.qsize() == 1
+
+
 def test_gate_disabled_lets_short_sources_through(dirs, monkeypatch):
     _stub_probe(monkeypatch, duration=24)
     monkeypatch.setattr(app_module, "MIN_SOURCE_SECONDS", 0)

@@ -26,7 +26,7 @@ const TOUR = [
   {
     target: '[data-tutorial="generate"]',
     title: 'Generate',
-    body: 'Tick that you have the rights, then generate. That is the whole first run.',
+    body: 'Click Generate Clips to start. That is the whole first run.',
   },
 ];
 
