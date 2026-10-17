@@ -27,6 +27,35 @@ jobs:
       - name: Run tests
         run: pytest tests/ -v
 
+  vast-python-dependencies:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Resolve the full Vast Python dependency set
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --dry-run --ignore-installed \
+            --extra-index-url https://download.pytorch.org/whl/cu128 \
+            -c ops/vast/constraints.txt -r requirements.txt 'yt-dlp[default]'
+      - name: Check language detection with the constrained NumPy version
+        run: |
+          python -m pip install -c ops/vast/constraints.txt numpy py3langid==0.2.2
+          python - <<'PY'
+          import numpy
+          import py3langid
+          assert numpy.__version__ == '1.26.4'
+          for text, expected in [
+              ('This video explains how to turn a long interview into short clips.', 'en'),
+              ('Cette vidéo explique comment transformer un entretien en courtes vidéos.', 'fr'),
+              ('Este vídeo explica cómo convertir una entrevista en vídeos cortos.', 'es'),
+          ]:
+              detected, _ = py3langid.classify(text)
+              assert detected == expected, (text, detected)
+          PY
+
   frontend-build:
     runs-on: ubuntu-latest
     defaults:

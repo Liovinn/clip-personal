@@ -34,6 +34,10 @@ instance's root terminal after fixing the reported error:
 curl -fL --retry 3 https://raw.githubusercontent.com/Liovinn/clip-personal/main/ops/vast/bootstrap.sh -o /tmp/openshorts-setup.sh && bash /tmp/openshorts-setup.sh
 ```
 
+The installer keeps the base image's existing Supervisor configuration without
+prompting. Its dependency pins keep language detection compatible with the
+NumPy 1.x version required by MediaPipe on Linux.
+
 The installer rejects overlapping runs. Installation failures are reported in
 Vast's logs; do not wait indefinitely for the dashboard if setup has failed.
 
