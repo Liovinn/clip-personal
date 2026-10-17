@@ -15,8 +15,10 @@ flock -n 9 || { echo 'OpenShorts setup is already running.'; exit 0; }
 
 apt-get update -qq
 apt-get install -y --no-install-recommends git curl ca-certificates ffmpeg fontconfig \
-  fonts-liberation fonts-noto-core fonts-noto-color-emoji libgl1 libglib2.0-0 \
-  libnss3 libatk-bridge2.0-0 libx11-xcb1 libxcomposite1 libxdamage1 libxrandr2 \
+  fonts-liberation fonts-noto-core fonts-noto-color-emoji libgl1 libegl1 libgles2 \
+  libglib2.0-0t64 libnss3 libatk-bridge2.0-0t64 libatk1.0-0t64 libatspi2.0-0t64 \
+  libcups2t64 libdbus-1-3 libdrm2 libxkbcommon0 libx11-xcb1 libxcb1 libxext6 \
+  libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libcairo2 libpango-1.0-0 \
   libgbm1 libasound2t64 supervisor
 
 # The documented Vast base image includes Node LTS. Load NVM for non-login boots.
