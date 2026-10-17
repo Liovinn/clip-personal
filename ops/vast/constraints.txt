@@ -1,0 +1,7 @@
+# MediaPipe 0.10.14 uses the NumPy 1.x ABI on Linux. Keep its dependency
+# family compatible instead of pulling newer OpenCV/JAX NumPy 2 builds.
+numpy==1.26.4
+opencv-python==4.11.0.86
+opencv-contrib-python==4.11.0.86
+jax==0.4.35
+jaxlib==0.4.35

@@ -155,7 +155,7 @@ async function main() {
   await initBundle();
   console.log("[render-service] Bundle ready.");
 
-  app.listen(PORT, () => {
+  app.listen(PORT, process.env.HOST || "0.0.0.0", () => {
     console.log(`[render-service] Listening on port ${PORT}`);
   });
 }

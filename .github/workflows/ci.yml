@@ -43,3 +43,40 @@ jobs:
         run: npm ci
       - name: Build
         run: npm run build
+
+  vast-renderer-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Check Vast shell scripts
+        run: |
+          bash -n ops/vast/bootstrap.sh
+          bash -n ops/vast/run-service.sh
+          shellcheck ops/vast/bootstrap.sh ops/vast/run-service.sh
+      - name: Install renderer and composition dependencies
+        run: |
+          npm ci --prefix render-service
+          npm ci --prefix remotion
+      - name: Check renderer build and metadata
+        run: |
+          npm run build --prefix render-service
+          npm test --prefix render-service
+      - name: Smoke test the bundled renderer
+        env:
+          HOST: "127.0.0.1"
+          PORT: "3100"
+        run: |
+          cd render-service
+          node dist/server.js > /tmp/openshorts-renderer.log 2>&1 &
+          renderer_pid=$!
+          trap 'kill "$renderer_pid" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent http://127.0.0.1:3100/health; then exit 0; fi
+            if ! kill -0 "$renderer_pid" 2>/dev/null; then break; fi
+            sleep 2
+          done
+          cat /tmp/openshorts-renderer.log
+          exit 1
