@@ -41,7 +41,7 @@ The explicit image tag selects **CUDA 12.8.1, cuDNN, Ubuntu 24.04, Python 3.11**
 It is a single pinned environment instead of a choice of arbitrary “12.8+” images.
 The installer uses PyTorch 2.11.0 CUDA 12.8 wheels for RTX 50-series support and
 checks CUDA kernels, a Whisper transcription, and H.264 NVENC encoding. It installs
-OpenShorts, its renderer/browser, fonts, and pinned Node dependencies. The base
+OpenShorts, its renderer/browser, fonts, Deno for URL extraction, and pinned Node dependencies. The base
 image must provide Node 22 or newer; a clear error is printed otherwise.
 
 Sources: [Vast image tags and Python variants](https://github.com/vast-ai/base-image#available-image-variants),

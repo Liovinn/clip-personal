@@ -35,6 +35,11 @@ if ! command -v node >/dev/null || ! command -v npm >/dev/null; then
 fi
 node -e 'if (Number(process.versions.node.split(".")[0]) < 22) { console.error("Node 22+ required; select the documented Vast base image."); process.exit(1); }'
 node_bin=$(command -v node)
+# yt-dlp's default JavaScript challenge runtime is Deno, not Node.
+if ! command -v deno >/dev/null; then
+  npm install --global --no-audit --no-fund deno
+fi
+deno --version
 python_bin=/venv/main/bin/python
 [[ -x $python_bin ]] || { echo 'Expected /venv/main/bin/python. Use the documented Vast base image.' >&2; exit 1; }
 "$python_bin" -c 'import sys; assert (3, 11) <= sys.version_info[:2] <= (3, 12), "Python 3.11 or 3.12 required"'
@@ -96,7 +101,7 @@ redirect_stderr=true
 EOF
 done
 if ! supervisorctl status >/dev/null 2>&1; then
-  supervisord -c /etc/supervisor/supervisord.conf
+  supervisord -c /etc/supervisor/supervisord.conf 9>&-
 fi
 supervisorctl reread
 supervisorctl update
