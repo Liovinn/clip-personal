@@ -12,6 +12,7 @@ import hashlib
 import hmac
 import time
 import clip_exports
+import vps_exports
 import math
 import itertools
 import functools
@@ -3778,6 +3779,35 @@ async def export_clips_to_drive(job_id: str, request: Request):
     return {"status": "submitted", "confirmed": False, "folder": destination,
             "filename": filename, "size_bytes": archive.stat().st_size,
             "console_url": "https://cloud.vast.ai/instances/"}
+
+
+@app.get("/api/exports/vps-config")
+async def vps_export_config():
+    return {"enabled": bool(not BILLING_ENABLED and vps_exports.enabled())}
+
+
+@app.post("/api/jobs/{job_id}/export-vps")
+async def export_clips_to_vps(job_id: str, request: Request):
+    if BILLING_ENABLED:
+        raise HTTPException(status_code=404, detail="Not found")
+    if not vps_exports.enabled():
+        raise HTTPException(status_code=503, detail="Configure private VPS delivery first.")
+    _, archive, _ = await _prepare_clip_export(job_id, request)
+    try:
+        return vps_exports.start(job_id, archive)
+    except vps_exports.ExportError as error:
+        raise HTTPException(status_code=409, detail=str(error)) from error
+
+
+@app.get("/api/jobs/{job_id}/export-vps")
+async def clip_vps_export_status(job_id: str, request: Request):
+    if BILLING_ENABLED:
+        raise HTTPException(status_code=404, detail="Not found")
+    record = _job_record(job_id)
+    if record is None:
+        raise HTTPException(status_code=404, detail="Job not found")
+    await _assert_job_owner(request, record)
+    return vps_exports.state(job_id)
 
 
 # --- Project restore (paid mode) --------------------------------------------

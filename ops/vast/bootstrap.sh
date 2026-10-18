@@ -16,7 +16,7 @@ flock -n 9 || { echo 'OpenShorts setup is already running.'; exit 0; }
 apt-get update -qq
 # Preserve the base image's Supervisor configuration without an interactive prompt.
 apt-get install -y -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold \
-  --no-install-recommends git curl ca-certificates ffmpeg fontconfig \
+  --no-install-recommends git curl ca-certificates openssh-client ffmpeg fontconfig \
   fonts-liberation fonts-noto-core fonts-noto-color-emoji libgl1 libegl1 libgles2 \
   libglib2.0-0t64 libnss3 libatk-bridge2.0-0t64 libatk1.0-0t64 libatspi2.0-0t64 \
   libcups2t64 libdbus-1-3 libdrm2 libxkbcommon0 libx11-xcb1 libxcb1 libxext6 \

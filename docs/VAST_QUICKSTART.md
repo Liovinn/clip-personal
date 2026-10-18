@@ -207,6 +207,42 @@ or the instance is destroyed. Clicking again reuses it unless the clip files
 changed. Editing a clip creates a different archive and keeps the older one
 available for an existing transfer. A deleted instance cannot resume a download.
 
+### Save to your VPS (optional)
+
+A VPS can retain finished clip ZIPs after a GPU rental ends. Configure a separate
+download subdomain on its existing web server, with HTTPS and expiring download
+links. The root-owned `ops/vast/receive-vps.py` is a restricted SSH receiver: it
+accepts only ZIP uploads, verifies their SHA-256 and size, checks storage limits,
+then atomically publishes them. Bind a dedicated upload key using OpenSSH
+`restrict,command="/usr/bin/python3 /path/to/receive-vps.py"`; do not use the VPS
+administrator's key for automated delivery.
+
+Set **OPENSHORTS_VPS_CONFIG_B64** in **Vast account environment variables**, or in
+a private instance. It is base64-encoded JSON with `host`, `port`, `user`,
+`base_url` (HTTPS), `private_key` (the restricted upload key), and `host_key`
+(the pinned SSH Ed25519 public host key). Base64 is not encryption. This is a
+credential: never paste it into GitHub or a public template. The receiver's
+download-link signing secret stays only on the VPS.
+
+For an existing rental, first update OpenShorts after active jobs finish, then run
+`/workspace/clip-personal/.venv/bin/python /workspace/clip-personal/ops/vast/configure-vps.py`
+in its terminal and paste only the setting's value at the hidden prompt. This
+saves a private, ignored configuration file; refreshing the dashboard enables
+the button. Use the account environment setting for automatic setup on future
+rentals. Never paste the credential into a video URL or the app's API-key fields.
+
+When configured, finished jobs show **save to VPS**. The app prepares the same
+cached ZIP used by download all, then uploads directly **Vast → VPS**. Watch its
+upload progress and wait for **VPS copy verified**. Save the download link and
+check it opens before destroying Vast. The link continues to work until its
+displayed expiry; anyone holding it can download that ZIP. Files remain on the
+VPS until its administrator deletes them; link expiry does not free storage.
+
+An interrupted upload can be retried. The upload restarts; the HTTPS download
+supports HTTP range requests for resuming. Restarting the Vast app loses its
+in-memory transfer status, so save completed links before restarting. An app
+update uses the same bootstrap command in this guide, after active jobs finish.
+
 ### Save to Google Drive (optional)
 
 This transfers **Vast -> Google Drive**, without routing video bytes through your

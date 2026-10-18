@@ -104,6 +104,38 @@ def test_managed_cloud_cannot_use_instance_drive_credentials(monkeypatch):
     assert "private-instance-key" not in response.text
 
 
+def test_vps_setting_stays_private_and_unconfigured_export_is_disabled(monkeypatch):
+    monkeypatch.setenv("OPENSHORTS_VPS_CONFIG_B64", "private-bad-fixture")
+    response = request("GET", "/api/exports/vps-config")
+    assert response.json() == {"enabled": False}
+    assert "private-bad-fixture" not in response.text
+    assert request("POST", f"/api/jobs/{JOB}/export-vps").status_code == 503
+
+
+def test_managed_cloud_cannot_use_vps_delivery(monkeypatch):
+    monkeypatch.setattr(app_module, "BILLING_ENABLED", True)
+    monkeypatch.setattr(app_module.vps_exports, "enabled", lambda: True)
+    assert request("GET", "/api/exports/vps-config").json() == {"enabled": False}
+    for method in ("POST", "GET"):
+        assert request(method, f"/api/jobs/{JOB}/export-vps").status_code == 404
+
+
+def test_vps_upload_receives_only_prepared_delivered_clip_archive(project, monkeypatch):
+    monkeypatch.setattr(app_module.vps_exports, "enabled", lambda: True)
+    sent = []
+    def start(job_id, archive):
+        with zipfile.ZipFile(archive) as bundle:
+            sent.append((job_id, bundle.read(bundle.namelist()[0]), bundle.namelist()))
+        return {"status": "queued", "confirmed": False}
+    monkeypatch.setattr(app_module.vps_exports, "start", start)
+    response = request("POST", f"/api/jobs/{JOB}/export-vps")
+    assert response.json() == {"status": "queued", "confirmed": False}
+    assert sent[0][0] == JOB
+    assert sent[0][1] == b"current captioned clip"
+    assert len(sent[0][2]) == 1
+    assert request("GET", "/api/jobs/not-a-job/export-vps").status_code == 404
+
+
 @pytest.mark.parametrize("provider_status,provider_body,expected", [
     (200, {"success": True}, 200),
     (200, {"success": False, "msg": "rejected"}, 502),

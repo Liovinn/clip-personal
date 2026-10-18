@@ -35,6 +35,17 @@ or client-supplied credentials, and returns `submitted`, never `completed`.
 Actual completion must be verified in Vast and Drive. Connection setup, HTTPS
 gateway settings, and a route benchmark are in `docs/VAST_QUICKSTART.md`.
 
+Optional self-host VPS delivery uses `POST /api/jobs/{job_id}/export-vps` to queue
+the existing ZIP and GET on the same path to poll progress. Only a remote
+SHA-256/size confirmation marks a transfer completed. `vps_exports.py` uses a
+dedicated SSH upload key and pinned server host key from the private
+`OPENSHORTS_VPS_CONFIG_B64` account setting. This setting is never returned by
+the API. The receiver (`ops/vast/receive-vps.py`) accepts only the upload protocol,
+publishes verified ZIPs atomically and returns scoped, expiring HTTPS links.
+Downloads require Nginx secure_link validation; bearer links must be kept private.
+Managed Cloud cannot enable this feature. Transcription, selection and rendering
+do not call this delivery code.
+
 ## API keys (`cloud/api_keys.py`)
 
 `osk_...` tokens, sha256-stored, created in the dashboard account page.
