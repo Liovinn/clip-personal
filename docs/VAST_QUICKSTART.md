@@ -9,25 +9,46 @@ Vast container. There is no nested Docker or Docker Compose requirement.
 Create a custom template in Vast and name it **OpenShorts Personal — Browser**.
 These access and delivery settings keep the existing GPU processing setup.
 
+Use **Jupyter-python notebook + SSH**. Vast supplies both access methods in
+this mode; the on-start command then starts the image's portal and installer.
+The previous Entrypoint-only setup did not guarantee an SSH server. Opening
+port 22 or adding a key alone does not start one.
+
 | Template field | Value |
 | --- | --- |
 | Docker image | `vastai/base-image:cuda-12.8.1-cudnn-devel-ubuntu24.04-py311` |
-| Launch mode | **Entrypoint** (use the image's default entrypoint) |
+| Launch mode | **Jupyter-python notebook + SSH** |
 | Environment variable | `NVIDIA_DRIVER_CAPABILITIES=compute,video,utility` |
 | Environment variable | `PROVISIONING_SCRIPT=https://raw.githubusercontent.com/Liovinn/clip-personal/main/ops/vast/bootstrap.sh` |
 | Environment variable | `ENABLE_HTTPS=true` |
 | Environment variable | `ENABLE_AUTH=true` |
 | Environment variable | `OPEN_BUTTON_PORT=1111` |
-| Environment variable | `PORTAL_CONFIG="localhost:1111:11111:/:Instance Portal\|localhost:8080:18080:/:Jupyter\|localhost:5176:5175:/:OpenShorts"` |
+| Environment variable | `PORTAL_CONFIG="localhost:1111:11111:/:Instance Portal\|localhost:8080:8080:/:Jupyter\|localhost:5176:5175:/:OpenShorts"` |
 | Environment variable | `VITE_EXTRA_ALLOWED_HOSTS=.trycloudflare.com` |
 | Ports, TCP | **22, 1111, 8080, 5176** |
-| On-start script / command override | Leave empty; preserve the image's default entrypoint |
+| On-start script | Paste the command below (required) |
+| Disk allocation | **50 GB** |
+
+Paste this into **On-start Script**, not Docker Options:
+
+```bash
+curl -fsSL --retry 3 --connect-timeout 20 --max-time 120 https://raw.githubusercontent.com/Liovinn/clip-personal/main/ops/vast/onstart.sh -o /tmp/openshorts-onstart.sh && bash /tmp/openshorts-onstart.sh
+```
+
+For fewer typing errors, replace **Docker Options** with the complete one-line
+contents of [template-docker-options.txt](../ops/vast/template-docker-options.txt).
+That field represents the same ports and environment rows; use either method,
+without adding a second copy. The on-start command is also saved separately in
+[onstart-command.txt](../ops/vast/onstart-command.txt).
 
 Enter each environment variable in a separate Key/Value row, without including
-`=` in either field. Most values need no quotes. For **PORTAL_CONFIG**, include
-double quotes around the whole value because `Instance Portal` contains a space;
-Vast's editor requires spaces to be quoted. Use plain `|` separators, without
-backslashes. **OPEN_BUTTON_PORT** has key `OPEN_BUTTON_PORT` and value `1111`;
+`=` in either field. Most values need no quotes. **PORTAL_CONFIG** must have
+double quotes around the whole value because `Instance Portal` contains a space.
+Use plain `|` separators, without backslashes. Keep that exact label: the base
+image uses it to decide whether to start the portal. The on-start script safely
+removes a pair of literal outer quotes if the editor preserves them.
+**OPEN_BUTTON_PORT** has key
+`OPEN_BUTTON_PORT` and value `1111`;
 it tells Vast's Open button where the portal is listening.
 [Copyable non-secret settings](../ops/vast/template.env.example).
 
@@ -36,17 +57,27 @@ For explicit Docker port options, these are:
 Vast assigns the external public ports. Do not publicly expose backend 8000,
 renderer 3100, or the unauthenticated frontend 5175.
 
-The image's native entrypoint initializes its portal, HTTPS, and authentication,
-then downloads and runs `PROVISIONING_SCRIPT` after Supervisor starts.
+The on-start script checks the access settings, then calls the image's original
+entrypoint. That initializes the portal, HTTPS, and authentication, then downloads
+and runs `PROVISIONING_SCRIPT` after Supervisor starts.
 The base image records successful provisioning and reuses it on later boots;
 Supervisor automatically starts the installed OpenShorts services again.
-Entrypoint mode avoids starting an extra Jupyter process alongside the base
-image's own Jupyter service. The OpenShorts entry proxies external port 5176 to
+The Jupyter entry uses **8080:8080**, so Caddy does not bind the port already used
+by Vast's Jupyter server. The OpenShorts entry proxies external port 5176 to
 the existing loopback frontend on 5175, without changing its processing services.
 
 Keep `ENABLE_AUTH=true` and leave `AUTH_EXCLUDE` unset. Vast's Open button supplies
 the access cookie; its default Basic Auth username is `vastai`, with the generated
 instance token as the password. Keep that token out of GitHub and screenshots.
+
+Before renting, add your **public** SSH key to Vast's account SSH keys and save
+the template using **Create** or **Save**. The public key ends in `.pub`; never
+upload the private key. No API key or password belongs in these template files.
+
+On the next rental, check access before processing any videos: Jupyter's terminal
+must open, the SSH connection must reach authentication, and OpenShorts must load
+through the authenticated portal. A successful CUDA check only confirms the GPU;
+it does not confirm those access paths.
 
 If provisioning fails or you want to run setup manually, use this in the
 instance's root terminal after fixing the reported error:
@@ -94,7 +125,10 @@ downloads use bandwidth too. Choose more space if the source files are large.
 
 Rent your saved template. Initial installation and first model downloads take
 time and use rented resources. Follow progress in Vast's instance logs or terminal.
-The installer prints **OpenShorts is ready** only after all three services respond.
+The installer prints **OpenShorts is ready** only after all three services respond
+and the portal/app gateways reject anonymous access and accept the instance's
+credentials. These checks run inside the instance; you still need to verify the
+public link and SSH connection from your computer.
 
 ## 3. Open in your browser
 
@@ -116,7 +150,7 @@ exposing the plain frontend; use the private SSH fallback below until fixed.
 
 ### If Vast says "Instance is running but has no web interface"
 
-An Entrypoint-mode instance needs **OPEN_BUTTON_PORT=1111** so the Vast console
+This template uses **OPEN_BUTTON_PORT=1111** so the Vast console
 knows which port the Open button should use. The TCP port **1111** must also be
 mapped in the template; **PORTAL_CONFIG** alone does not configure this button.
 Saving a corrected template affects future launches, not the running rental.
@@ -128,10 +162,13 @@ This does not bypass the gateway's authentication: the default username is
 in the instance's SSH shell with `printenv OPEN_BUTTON_TOKEN`; do not post the
 token or any token-bearing URL in screenshots, chat, or the repository.
 
-If that address does not respond, use SSH to check `supervisorctl status`,
+If that address does not respond, use **Connect → Open Jupyter Terminal** or SSH
+to check `supervisorctl status`,
 `curl -I http://127.0.0.1:11111/`, and the Caddy/portal logs. This distinguishes
-an Open-button setting from a service that did not start. Keep the rental intact
-while diagnosing; there is no need to change video processing to investigate it.
+an Open-button setting from a service that did not start. If SSH accepts a TCP
+connection but times out before showing an SSH banner, it has not reached key
+authentication: check the launch mode and instance logs rather than replacing
+keys repeatedly. Use a new instance for changed launch settings.
 
 ### SSH fallback from Windows
 
@@ -264,9 +301,11 @@ are preserved: the updater stops if it finds uncommitted changes. Dependency
 installs are reused when the setup inputs have not changed. If the GPU check
 fails, read the error; do not assume that a visible GPU means CUDA/NVENC works.
 
-The existing CUDA processing setup has run on a Vast GPU. These new browser-access
-settings and the real Google Drive upload still need validation on the next
-rental; no new paid instance is created by this update. Local checks cover ZIP
+The existing CUDA processing setup has run on a Vast GPU. This corrected template
+still needs an end-to-end access check on the next rental, as does the real Google
+Drive upload; no new paid instance is created by this update. CI checks the
+copyable access settings and startup validation, in addition to the dependency
+and Supervisor checks. Local checks cover ZIP
 contents, caching, HTTP range requests, access checks, and the cloud-copy API
 contract. They do not measure your next host's real network performance.
 

@@ -114,6 +114,13 @@ for port_path in '8000/health/ready' '3100/health' '5175/api/config'; do
   done
   [[ $ready == 1 ]] || { echo "Service $port_path failed; check .cache/vast/*.log" >&2; exit 1; }
 done
+
+# Internal app health alone does not prove that the browser gateway works.
+# Manual SSH-only installs can use this installer without public web access.
+if [[ ${ENABLE_HTTPS:-} == true && ${ENABLE_AUTH:-} == true && ${OPEN_BUTTON_PORT:-} == 1111 ]]; then
+  .venv/bin/python ops/vast/check-access.py
+fi
+
 echo 'OpenShorts is ready. Open the authenticated OpenShorts link in the Vast Instance Portal.'
 echo 'SSH fallback: forward port 5175 and open http://localhost:15175/#app.'
 echo 'Add your Gemini key in Settings. Download finished clips before destroying this instance.'
