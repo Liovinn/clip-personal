@@ -17,13 +17,18 @@ These access and delivery settings keep the existing GPU processing setup.
 | Environment variable | `PROVISIONING_SCRIPT=https://raw.githubusercontent.com/Liovinn/clip-personal/main/ops/vast/bootstrap.sh` |
 | Environment variable | `ENABLE_HTTPS=true` |
 | Environment variable | `ENABLE_AUTH=true` |
-| Environment variable | `PORTAL_CONFIG=localhost:1111:11111:/:Instance Portal\|localhost:8080:18080:/:Jupyter\|localhost:5176:5175:/:OpenShorts` |
+| Environment variable | `OPEN_BUTTON_PORT=1111` |
+| Environment variable | `PORTAL_CONFIG="localhost:1111:11111:/:Instance Portal\|localhost:8080:18080:/:Jupyter\|localhost:5176:5175:/:OpenShorts"` |
 | Environment variable | `VITE_EXTRA_ALLOWED_HOSTS=.trycloudflare.com` |
 | Ports, TCP | **22, 1111, 8080, 5176** |
 | On-start script / command override | Leave empty; preserve the image's default entrypoint |
 
-Enter each environment variable in a separate Key/Value row without `=` or
-quotes. The PORTAL_CONFIG value uses plain `|` separators, without backslashes.
+Enter each environment variable in a separate Key/Value row, without including
+`=` in either field. Most values need no quotes. For **PORTAL_CONFIG**, include
+double quotes around the whole value because `Instance Portal` contains a space;
+Vast's editor requires spaces to be quoted. Use plain `|` separators, without
+backslashes. **OPEN_BUTTON_PORT** has key `OPEN_BUTTON_PORT` and value `1111`;
+it tells Vast's Open button where the portal is listening.
 [Copyable non-secret settings](../ops/vast/template.env.example).
 
 For explicit Docker port options, these are:
@@ -108,6 +113,25 @@ OpenShorts address is rejected or sent to the Vast login page.
 
 If the portal's Caddy service fails, inspect its log. Do not work around it by
 exposing the plain frontend; use the private SSH fallback below until fixed.
+
+### If Vast says "Instance is running but has no web interface"
+
+An Entrypoint-mode instance needs **OPEN_BUTTON_PORT=1111** so the Vast console
+knows which port the Open button should use. The TCP port **1111** must also be
+mapped in the template; **PORTAL_CONFIG** alone does not configure this button.
+Saving a corrected template affects future launches, not the running rental.
+
+For the current instance, inspect **IP / Port Info** on its card. Find the public
+mapping for internal port **1111/tcp**, and open `https://PUBLIC_IP:MAPPED_PORT/`.
+This does not bypass the gateway's authentication: the default username is
+`vastai`; the password is the instance's `OPEN_BUTTON_TOKEN`. Retrieve it privately
+in the instance's SSH shell with `printenv OPEN_BUTTON_TOKEN`; do not post the
+token or any token-bearing URL in screenshots, chat, or the repository.
+
+If that address does not respond, use SSH to check `supervisorctl status`,
+`curl -I http://127.0.0.1:11111/`, and the Caddy/portal logs. This distinguishes
+an Open-button setting from a service that did not start. Keep the rental intact
+while diagnosing; there is no need to change video processing to investigate it.
 
 ### SSH fallback from Windows
 
