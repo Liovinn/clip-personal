@@ -2,8 +2,11 @@ import { StrictMode, useState, useEffect, lazy, Suspense } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import './clipedit.css'
+import Landing from './Landing.jsx'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { capture as captureAttribution } from './lib/attribution'
+import PricingPage from './components/PricingPage'
+import AccountPage from './components/AccountPage'
 import LoginModal from './components/LoginModal'
 import { readPendingPlan } from './lib/pendingPlan'
 import { applyConsent } from './lib/consent'
@@ -11,8 +14,7 @@ import CookieBanner from './components/CookieBanner'
 
 const App = lazy(() => import('./App.jsx'))
 const Legal = lazy(() => import('./Legal.jsx'))
-const PricingPage = lazy(() => import('./components/PricingPage'))
-const AccountPage = lazy(() => import('./components/AccountPage'))
+const OAuthConsent = lazy(() => import('./components/OAuthConsent'))
 
 function PageShell({ title, children }) {
   return (
@@ -71,43 +73,51 @@ function DeletedView() {
           You're welcome back any time — signing up again with the same address
           starts a brand-new, empty account.
         </p>
-        <a href="#app" className="btn-ghost px-4 py-2 inline-flex">Back to clip generator</a>
+        <a href="#landing" className="btn-ghost px-4 py-2 inline-flex">Back to Clipedit</a>
       </div>
     </div>
   );
 }
 
-function resolveView(billingEnabled) {
-  const hash = window.location.hash || '';
-  if (hash === '#legal') return 'legal';
-  if (billingEnabled) {
+function Root() {
+  const resolveView = () => {
+    const hash = window.location.hash || '';
     if (hash.startsWith('#/auth/')) return 'auth';       // AuthContext consumes then redirects
+    if (hash.startsWith('#/oauth/authorize')) return 'oauth';
     if (hash.startsWith('#/account')) return 'account';
     if (hash.startsWith('#/deleted')) return 'deleted';
     if (hash.startsWith('#/pricing')) return 'pricing';
-  }
-  return 'app';
-}
+    if (hash === '#legal') return 'legal';
+    // #landing = explicit landing view (app logo); section anchors keep the landing mounted
+    if (['#landing', '#features', '#how-it-works', '#pricing', '#comparison', '#faq'].includes(hash)) return 'landing';
+    if (hash === '#app' || hash.startsWith('#app?') || localStorage.getItem('openshorts_skip_landing') === '1') return 'app';
+    return 'app';
+  };
 
-function Root() {
-  const { billingEnabled } = useAuth();
-  const [view, setView] = useState(() => resolveView(billingEnabled));
+  const [view, setView] = useState(resolveView);
 
   useEffect(() => {
-    const handleHashChange = () => setView(resolveView(billingEnabled));
-    handleHashChange();
+    const handleHashChange = () => setView(resolveView());
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
-  }, [billingEnabled]);
+  }, []);
+
+  const handleLaunchApp = () => {
+    localStorage.setItem('openshorts_skip_landing', '1');
+    window.location.hash = '#app';
+    setView('app');
+  };
 
   if (view === 'legal') return <Legal />;
   if (view === 'pricing') return <PricingView />;
   if (view === 'account') return <AccountView />;
+  if (view === 'oauth') return <OAuthConsent />;
   if (view === 'deleted') return <DeletedView />;
   if (view === 'auth') {
     return <div className="min-h-screen flex items-center justify-center bg-background text-zinc-400">Signing you in…</div>;
   }
-  return <App />;
+  if (view === 'app') return <App />;
+  return <Landing onLaunchApp={handleLaunchApp} />;
 }
 
 // Before React mounts: AuthContext rewrites the URL on auth redirects, which

@@ -1,11 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Check, Loader2, Zap, Cpu, KeyRound } from 'lucide-react';
+import { Check, Loader2, Zap, Cpu, KeyRound, Send, HardDrive, Bot } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { apiJson } from '../lib/api';
 import { track } from '../lib/analytics';
 import { stashPendingPlan, readPendingPlan, clearPendingPlan } from '../lib/pendingPlan';
 import SegmentedControl from './ui/SegmentedControl';
-import { CLIP_GENERATOR_FEATURES } from '../../seo/data';
 
 const PLAN_ORDER = ['starter', 'creator', 'pro'];
 const PLAN_BLURB = {
@@ -187,7 +186,8 @@ export default function PricingSection({ onRequireLogin }) {
                 <li className="flex items-start gap-2"><Check size={16} className="text-ok shrink-0 mt-0.5" /> <span><b>{entry.minutes} min</b> of video / month</span></li>
                 <li className="flex items-start gap-2"><Check size={16} className="text-ok shrink-0 mt-0.5" /> <span><b>No watermark</b>, no 7-day clip expiry</span></li>
                 <li className="flex items-start gap-2"><Cpu size={16} className="text-ok shrink-0 mt-0.5" /> <span><b>GPU rendering</b>, about 50s per 8-min video</span></li>
-                <li className="flex items-start gap-2"><KeyRound size={16} className="text-ok shrink-0 mt-0.5" /> <span>Gemini key for clip generation included</span></li>
+                <li className="flex items-start gap-2"><KeyRound size={16} className="text-ok shrink-0 mt-0.5" /> <span>Gemini key + auto-posting included</span></li>
+                <li className="flex items-start gap-2"><Bot size={16} className="text-ok shrink-0 mt-0.5" /> <span><b>MCP + API access</b> for AI agents &amp; automations</span></li>
                 {plan === 'pro' && <li className="flex items-start gap-2"><Zap size={16} className="text-brass shrink-0 mt-0.5" /> <span>Priority processing queue</span></li>}
               </ul>
               <button
@@ -203,18 +203,41 @@ export default function PricingSection({ onRequireLogin }) {
         })}
       </div>
 
-      <div className="mt-10 card p-6">
-        <span className="badge-ok"><Check size={12} /> Clip generation</span>
-        <ul className="space-y-2 text-sm text-ink2 mt-4">
-          {CLIP_GENERATOR_FEATURES.map((feature) => (
-            <li key={feature} className="flex items-start gap-2">
-              <Check size={15} className="text-ok shrink-0 mt-0.5" />
-              <span>{feature}</span>
-            </li>
-          ))}
-        </ul>
-        <p className="text-xs text-muted mt-4">Your minutes cover the length of the source video processed.</p>
+      {/* What every plan includes vs what's bring-your-own-key */}
+      <div className="mt-10 grid md:grid-cols-2 gap-4">
+        <div className="card p-6">
+          <div className="mb-4">
+            <span className="badge-ok"><Check size={12} /> Included in every plan</span>
+          </div>
+          <ul className="space-y-2 text-sm text-ink2">
+            <li className="flex items-start gap-2"><Cpu size={15} className="text-ok shrink-0 mt-0.5" /> <span><b>Our NVIDIA GPU does the rendering.</b> An 8-minute video is clipped in about 50 seconds, instead of the 5 to 8 minutes it takes on a typical CPU.</span></li>
+            <li className="flex items-start gap-2"><KeyRound size={15} className="text-ok shrink-0 mt-0.5" /> <span><b>The Gemini API key is included.</b> Nothing to sign up for, nothing to paste, no per-request quota of your own to babysit.</span></li>
+            <li className="flex items-start gap-2"><Send size={15} className="text-ok shrink-0 mt-0.5" /> <span><b>Auto-posting is already wired up</b> for TikTok, Instagram Reels and YouTube Shorts.</span></li>
+            <li className="flex items-start gap-2"><HardDrive size={15} className="text-ok shrink-0 mt-0.5" /> <span><b>Clips are stored and served for you</b>, ready to re-open and re-edit from any browser.</span></li>
+            <li className="flex items-start gap-2"><Check size={15} className="text-ok shrink-0 mt-0.5" /> <span>Full <b>YouTube Studio</b>: titles, thumbnails and descriptions.</span></li>
+            <li className="flex items-start gap-2"><Bot size={15} className="text-ok shrink-0 mt-0.5" /> <span><b>MCP server &amp; API for agents.</b> Connect Claude, ChatGPT or n8n to an always-on endpoint and automate clipping end to end. API calls use the same minutes, nothing extra to buy. <a href="/mcp" className="underline underline-offset-2 hover:text-ink" target="_blank" rel="noopener">Guide</a>.</span></li>
+          </ul>
+          <p className="text-xs text-muted mt-3 pt-3 border-t border-rule">
+            Your monthly minutes cover video processing. Titles &amp; descriptions are free;
+            AI <b>thumbnail image generation</b> uses ~3 min of your quota per batch.
+          </p>
+        </div>
+        <div className="card p-6">
+          <div className="mb-4">
+            <span className="badge-warn"><Zap size={12} /> Bring your own key</span>
+          </div>
+          <p className="text-sm text-muted mb-3 leading-relaxed">
+            <b className="text-ink2">AI Shorts</b> (AI-actor UGC videos) and <b className="text-ink2">voice dubbing</b> use premium generation from
+            <b className="text-ink2"> fal.ai</b> and <b className="text-ink2">ElevenLabs</b>. Connect your own keys for those — you're billed by those
+            providers directly (typically ~$0.65-2 per video). Your plan still covers the script &amp; orchestration.
+          </p>
+          <p className="text-xs text-muted">Managed credits for these are coming later — no keys needed.</p>
+        </div>
       </div>
+
+      <p className="text-center text-muted text-xs mt-8 lowercase">
+        start free right here, upgrade for more minutes and no watermark, or run it yourself on your own hardware.
+      </p>
     </div>
   );
 }

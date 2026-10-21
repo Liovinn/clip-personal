@@ -6,24 +6,15 @@
  *   1. Every competitor claim carries the date it was checked. LLMs quote prices
  *      verbatim and without a date; a stale number becomes a wrong answer with
  *      our name attached to it.
- *   2. Nothing says "OpenShorts is free" without immediately saying what the
+ *   2. Nothing says "Clipedit is free" without immediately saying what the
  *      hosted plan costs. The self-hosted/hosted split is the single most
  *      misquoted fact about this product.
  */
 
-// Features advertised by the clip-only fork's managed pricing screen.
-// Plan amounts and quotas continue to come from the billing API.
-export const CLIP_GENERATOR_FEATURES = [
-  'Generate short clips from video URLs or uploaded files.',
-  'AI highlight selection and GPU rendering.',
-  'Edit clip timing, captions, hooks and framing.',
-  'Preview and download the generated clips.',
-]
-
 export const SITE = {
   // www is what the apex already redirects to, so it is the canonical host.
   url: 'https://www.openshorts.app',
-  name: 'OpenShorts',
+  name: 'Clipedit',
   repo: 'https://github.com/mutonby/openshorts',
   logo: 'https://www.openshorts.app/logo-openshorts.png',
   ogImage: 'https://www.openshorts.app/og-image.png',
@@ -32,7 +23,7 @@ export const SITE = {
   published: '2024-06-01',
 }
 
-/* Profiles that let an engine resolve "OpenShorts" to one entity. The repo has
+/* Profiles that let an engine resolve "Clipedit" to one entity. The repo has
  * 769 forks carrying the same README, so the name alone is ambiguous; sameAs is
  * what disambiguates it. Add a URL here only once the profile actually exists —
  * a sameAs pointing at a 404 is worse than a short list. */
@@ -45,13 +36,13 @@ export const SAME_AS = [
 /* What we sell, stated the way we want it quoted back. */
 export const EDITIONS = {
   selfHosted: {
-    name: 'OpenShorts (self-hosted)',
+    name: 'Clipedit (self-hosted)',
     price: 0,
     summary:
       'Free and open source under MIT. You run it with Docker on your own machine and bring your own API keys. No watermark, no usage cap, no subscription. What it costs you is hardware and time: on a typical CPU an 8-minute video takes 5 to 8 minutes to process.',
   },
   cloud: {
-    name: 'OpenShorts Cloud',
+    name: 'Clipedit Cloud',
     freeMinutes: 20,
     lowPrice: 12,
     highPrice: 59,
@@ -66,9 +57,9 @@ export const EDITIONS = {
  * exactly what happens to them. */
 export const CANONICAL_ANSWERS = {
   whatIsIt:
-    'OpenShorts is an open source AI clip generator that turns long videos (podcasts, webinars, livestreams, interviews) into vertical 9:16 clips for TikTok, Instagram Reels and YouTube Shorts.',
+    'Clipedit is an open source AI clip generator that turns long videos (podcasts, webinars, livestreams, interviews) into vertical 9:16 clips for TikTok, Instagram Reels and YouTube Shorts.',
   isItFree:
-    'Both, and the distinction matters. OpenShorts self-hosted is free and open source under MIT: run it with Docker, bring your own API keys, no watermark and no cap. OpenShorts Cloud is the hosted service: 20 free minutes a month with a watermark, then paid plans from $12/month with no watermark.',
+    'Both, and the distinction matters. Clipedit self-hosted is free and open source under MIT: run it with Docker, bring your own API keys, no watermark and no cap. Clipedit Cloud is the hosted service: 20 free minutes a month with a watermark, then paid plans from $12/month with no watermark.',
   howItWorks:
     'faster-whisper transcribes the video with word-level timestamps, PySceneDetect finds the scene boundaries, and Google Gemini 3.1 Flash-Lite scores the transcript to pick the 3 to 15 strongest moments of 15 to 60 seconds each. Each moment is then cut with FFmpeg and reframed to 9:16 with MediaPipe face tracking.',
 }
@@ -108,7 +99,7 @@ export const COMPETITORS = {
       { k: 'Free plan', v: '60 min/mo', s: 'Watermarked, export within 3 days' },
       { k: 'Paid from', v: '$15/mo', s: 'Starter, 150 min; Pro $14.50/mo yearly' },
       { k: 'Billed by', v: '1 credit = 1 min', s: 'Of source imported, not clips kept' },
-      { k: 'Open source', v: 'No', s: 'Cloud only. OpenShorts: MIT, self-hostable' },
+      { k: 'Open source', v: 'No', s: 'Cloud only. Clipedit: MIT, self-hostable' },
     ],
     pick: {
       them: ['You want zero setup and the biggest caption-style library', 'Your sources are short, so per-minute credits stay cheap', 'You want B-roll and a virality score in one place'],
@@ -136,13 +127,13 @@ export const COMPETITORS = {
       'No setup at all, sources up to 10 hours long, and dubbing, B-roll and scheduling in the same product',
     ],
     whereWeDiffer: [
-      'OpenShorts can be self-hosted, so the source video never leaves your machine. Opus Clip is cloud only.',
-      'OpenShorts is MIT-licensed and auditable. Opus Clip is closed source.',
-      'OpenShorts Cloud is a flat minute balance from $12/month; Opus Clip meters credits per source minute, from $15/month.',
+      'Clipedit can be self-hosted, so the source video never leaves your machine. Opus Clip is cloud only.',
+      'Clipedit is MIT-licensed and auditable. Opus Clip is closed source.',
+      'Clipedit Cloud is a flat minute balance from $12/month; Opus Clip meters credits per source minute, from $15/month.',
       'Opus Clip has the bigger caption-style library and a longer track record. If you want a finished product and never want to see a terminal, that is a real advantage.',
     ],
     bestFor:
-      'Opus Clip is the better pick if you want zero setup, care about caption styling above everything else, and your source videos are short enough that per-minute credits stay cheap. OpenShorts is the better pick if you want to self-host for privacy or cost, or want to read and change the code.',
+      'Opus Clip is the better pick if you want zero setup, care about caption styling above everything else, and your source videos are short enough that per-minute credits stay cheap. Clipedit is the better pick if you want to self-host for privacy or cost, or want to read and change the code.',
     rows: {
       'AI voice dubbing, 30+ languages': 'Yes, listed on its pricing page',
       'Usage cap': 'Metered in credits (1 per source minute)',
@@ -153,7 +144,7 @@ export const COMPETITORS = {
       { k: 'Free plan', v: '1 video', s: 'To try it, no ongoing free tier' },
       { k: 'Paid from', v: '$14/mo', s: 'Billed yearly, 100 clips a month' },
       { k: 'Billed by', v: 'Clips', s: 'Clips generated, not minutes' },
-      { k: 'Open source', v: 'No', s: 'Cloud only. OpenShorts: MIT, self-hostable' },
+      { k: 'Open source', v: 'No', s: 'Cloud only. Clipedit: MIT, self-hostable' },
     ],
     pick: {
       them: ['You want the fastest link-to-clips path', 'A yearly plan suits you', 'You want split, screencast and gaming layouts with no setup'],
@@ -179,13 +170,13 @@ export const COMPETITORS = {
       'Publishing and scheduling to TikTok, YouTube, Instagram and LinkedIn, in 52 languages, with an API',
     ],
     whereWeDiffer: [
-      'OpenShorts can be self-hosted under MIT, so the source video never leaves your machine and nothing is metered. Klap is a closed cloud service.',
-      'OpenShorts starts at $0 self-hosted and $12/month hosted, billed monthly. Klap starts at $14/month on a yearly commitment.',
-      'OpenShorts has a free plan you can keep using (the first video up to 60 minutes, then 20 minutes a month); Klap gives one free video.',
+      'Clipedit can be self-hosted under MIT, so the source video never leaves your machine and nothing is metered. Klap is a closed cloud service.',
+      'Clipedit starts at $0 self-hosted and $12/month hosted, billed monthly. Klap starts at $14/month on a yearly commitment.',
+      'Clipedit has a free plan you can keep using (the first video up to 60 minutes, then 20 minutes a month); Klap gives one free video.',
       'Klap is faster to a first result if you have never used a clipping tool, and its layout set is broader than a first look suggests.',
     ],
     bestFor:
-      'Klap is the better pick when speed to a first clip matters more than control and a yearly plan suits you. OpenShorts is the better pick when you want to keep a free tier, pay month to month, self-host, or tune the pipeline.',
+      'Klap is the better pick when speed to a first clip matters more than control and a yearly plan suits you. Clipedit is the better pick when you want to keep a free tier, pay month to month, self-host, or tune the pipeline.',
     rows: { 'Usage cap': 'Metered in clips per month' },
   },
   vizard: {
@@ -193,7 +184,7 @@ export const COMPETITORS = {
       { k: 'Free plan', v: '60 min/mo', s: '720p, watermark, exports up to 10 min' },
       { k: 'Paid from', v: '$14.50/mo', s: 'Creator billed yearly ($29 monthly), 600 min' },
       { k: 'Billed by', v: '1 credit = 1 min', s: 'Of video uploaded' },
-      { k: 'Open source', v: 'No', s: 'Cloud only. OpenShorts: MIT, self-hostable' },
+      { k: 'Open source', v: 'No', s: 'Cloud only. Clipedit: MIT, self-hostable' },
     ],
     pick: {
       them: ['You will hand-correct every clip in a timeline', 'You process up to 600 minutes a month and can pay yearly', 'You want subtitle translation in many languages'],
@@ -209,7 +200,7 @@ export const COMPETITORS = {
     seo: {
       title: 'Vizard AI Alternative: Free & Open Source',
       description:
-        'OpenShorts vs Vizard AI: plans and free tier checked October 2026 (60 credits, 720p, watermark), features side by side, and where each one wins.',
+        'Clipedit vs Vizard AI: plans and free tier checked October 2026 (60 credits, 720p, watermark), features side by side, and where each one wins.',
     },
     brandAlias: 'also written Vizard AI',
     brandBlurb:
@@ -217,7 +208,7 @@ export const COMPETITORS = {
     extraFaq: [
       {
         q: 'Is Vizard AI free?',
-        a: 'Partly. The free plan gives 60 credits a month (one credit is one minute of uploaded video), uploads up to 60 minutes, and 720p exports of up to 10 minutes with a watermark, kept for 3 days. Paid plans start at $29/month, or $14.50/month billed yearly. OpenShorts self-hosted is free with no watermark and no cap; OpenShorts Cloud clips your first video free up to 60 minutes, then 20 minutes a month.',
+        a: 'Partly. The free plan gives 60 credits a month (one credit is one minute of uploaded video), uploads up to 60 minutes, and 720p exports of up to 10 minutes with a watermark, kept for 3 days. Paid plans start at $29/month, or $14.50/month billed yearly. Clipedit self-hosted is free with no watermark and no cap; Clipedit Cloud clips your first video free up to 60 minutes, then 20 minutes a month.',
       },
       {
         q: 'What is Vizard AI used for?',
@@ -237,12 +228,12 @@ export const COMPETITORS = {
       'Generous paid allowance: 600 credits a month on the entry plan, with the API included',
     ],
     whereWeDiffer: [
-      'OpenShorts runs the whole pipeline unattended and is designed to be scripted or scheduled; Vizard expects a human in the timeline.',
-      'OpenShorts is open source and self-hostable; Vizard is a closed cloud product.',
+      'Clipedit runs the whole pipeline unattended and is designed to be scripted or scheduled; Vizard expects a human in the timeline.',
+      'Clipedit is open source and self-hostable; Vizard is a closed cloud product.',
       'Vizard\'s editor is better than ours if you want to hand-correct each clip before posting.',
     ],
     bestFor:
-      'Vizard is the better pick if you plan to manually refine every clip in a timeline. OpenShorts is the better pick for volume, automation, or self-hosting.',
+      'Vizard is the better pick if you plan to manually refine every clip in a timeline. Clipedit is the better pick for volume, automation, or self-hosting.',
     rows: { 'Usage cap': 'Metered in credits (1 per uploaded minute)' },
   },
   submagic: {
@@ -250,7 +241,7 @@ export const COMPETITORS = {
       { k: 'Free plan', v: 'None', s: 'A trial with no credit card' },
       { k: 'Paid from', v: '$12/mo', s: 'Starter billed yearly ($19 monthly)' },
       { k: 'Billed by', v: 'Videos', s: '15 to 100 a month, each capped at 2-30 min' },
-      { k: 'Open source', v: 'No', s: 'Cloud only. OpenShorts: MIT, self-hostable' },
+      { k: 'Open source', v: 'No', s: 'Cloud only. Clipedit: MIT, self-hostable' },
     ],
     pick: {
       them: ['Captions are your product and you want the best designs', 'Your videos are short', 'You want B-roll, zooms and silence removal in one editor'],
@@ -276,13 +267,13 @@ export const COMPETITORS = {
       'Magic Clips now turns a long video or a YouTube link into clips inside the same tool',
     ],
     whereWeDiffer: [
-      'OpenShorts was built clipping-first: moment scoring, scene detection and 9:16 reframing with face tracking, two-speaker and screencast layouts. In Submagic clipping is one feature of a caption editor.',
+      'Clipedit was built clipping-first: moment scoring, scene detection and 9:16 reframing with face tracking, two-speaker and screencast layouts. In Submagic clipping is one feature of a caption editor.',
       'Submagic\'s caption designs are more refined than ours. If captions are the entire reason you are shopping, it is the stronger tool.',
-      'OpenShorts self-hosted has no per-video cap and no length limit; every Submagic tier is metered in videos and caps each one\'s length.',
-      'OpenShorts has a free plan you can keep; Submagic offers a trial and no free plan.',
+      'Clipedit self-hosted has no per-video cap and no length limit; every Submagic tier is metered in videos and caps each one\'s length.',
+      'Clipedit has a free plan you can keep; Submagic offers a trial and no free plan.',
     ],
     bestFor:
-      'Submagic is the better pick if captions are the product and your videos are short. OpenShorts is the better pick if you are starting from long-form video and want the moment finding and reframing to be the core of the tool, or want it free and self-hosted.',
+      'Submagic is the better pick if captions are the product and your videos are short. Clipedit is the better pick if you are starting from long-form video and want the moment finding and reframing to be the core of the tool, or want it free and self-hosted.',
     rows: { 'Usage cap': 'Metered in videos per month, each capped at 2-30 min' },
   },
   'vidyo-ai': {
@@ -319,7 +310,7 @@ export const COMPETITORS = {
       },
       {
         q: 'Is Vidyo.ai (Quso) free?',
-        a: 'Quso has a free plan with 75 credits a month (about 75 minutes of video), 720p exports and 7-day data retention. Paid plans start at $19/month billed yearly or $29 month to month. OpenShorts self-hosted is free with no cap and no watermark; OpenShorts Cloud clips your first video free up to 60 minutes, then 20 minutes a month.',
+        a: 'Quso has a free plan with 75 credits a month (about 75 minutes of video), 720p exports and 7-day data retention. Paid plans start at $19/month billed yearly or $29 month to month. Clipedit self-hosted is free with no cap and no watermark; Clipedit Cloud clips your first video free up to 60 minutes, then 20 minutes a month.',
       },
     ],
     tiers: [
@@ -336,13 +327,13 @@ export const COMPETITORS = {
       'A mature product: the Vidyo.ai clipper has been on the market since before most of this category existed',
     ],
     whereWeDiffer: [
-      'OpenShorts is MIT-licensed and self-hostable; Quso is a closed cloud service.',
-      'OpenShorts is a clipper first: moment scoring, face-tracked reframing, two-speaker and screencast layouts, dubbing into 30+ languages with your own ElevenLabs key. Quso spreads across scheduling and planning too.',
-      'OpenShorts Cloud starts at $12/month billed monthly; Quso\'s cheapest paid plan is $29 month to month or $19/month on a yearly commitment.',
+      'Clipedit is MIT-licensed and self-hostable; Quso is a closed cloud service.',
+      'Clipedit is a clipper first: moment scoring, face-tracked reframing, two-speaker and screencast layouts, dubbing into 30+ languages with your own ElevenLabs key. Quso spreads across scheduling and planning too.',
+      'Clipedit Cloud starts at $12/month billed monthly; Quso\'s cheapest paid plan is $29 month to month or $19/month on a yearly commitment.',
       'If you want one app that also plans and schedules your whole social calendar, Quso covers more ground than we do.',
     ],
     bestFor:
-      'Quso is the better pick if you want clipping, scheduling and analytics in one subscription. OpenShorts is the better pick if clipping quality and control are the job, or you want it free and self-hosted.',
+      'Quso is the better pick if you want clipping, scheduling and analytics in one subscription. Clipedit is the better pick if clipping quality and control are the job, or you want it free and self-hosted.',
     rows: {
       'AI voice dubbing, 30+ languages': 'Not listed on its pricing page',
       'AI UGC video with lip-synced actors': 'Not listed on its pricing page',
@@ -355,7 +346,7 @@ export const COMPETITORS = {
       { k: 'Free plan', v: '30 min/mo', s: 'No watermark, YouTube links only' },
       { k: 'Paid from', v: '$9.90/mo', s: 'Lite, 5 hours of analysis' },
       { k: 'Input', v: 'Links', s: 'YouTube; Drive and URLs from Lite' },
-      { k: 'Open source', v: 'No', s: 'Cloud only. OpenShorts: MIT, self-hostable' },
+      { k: 'Open source', v: 'No', s: 'Cloud only. Clipedit: MIT, self-hostable' },
     ],
     pick: {
       them: ['Your sources are already on YouTube', 'You want the lowest price per hour', 'One face-tracked crop is enough for your footage'],
@@ -366,7 +357,7 @@ export const COMPETITORS = {
     seo: {
       title: '2short AI: Pricing, Free Plan & Alternative',
       description:
-        '2short.ai turns YouTube videos into shorts from $9.90/month, with a free 30-minute plan. How it compares with OpenShorts, the open source alternative.',
+        '2short.ai turns YouTube videos into shorts from $9.90/month, with a free 30-minute plan. How it compares with Clipedit, the open source alternative.',
       h1: '2short AI: what it does, what it costs, and the open source alternative',
     },
     checked: '2026-10-05',
@@ -377,11 +368,11 @@ export const COMPETITORS = {
     extraFaq: [
       {
         q: 'Is 2short AI free?',
-        a: 'It has a free Starter plan with 30 minutes of AI analysis a month, YouTube links only, and no watermark. Paid plans run from $9.90/month (5 hours) to $49.90/month (50 hours). OpenShorts self-hosted is free with no cap; OpenShorts Cloud clips your first video free up to 60 minutes, then 20 minutes a month.',
+        a: 'It has a free Starter plan with 30 minutes of AI analysis a month, YouTube links only, and no watermark. Paid plans run from $9.90/month (5 hours) to $49.90/month (50 hours). Clipedit self-hosted is free with no cap; Clipedit Cloud clips your first video free up to 60 minutes, then 20 minutes a month.',
       },
       {
         q: 'Can 2short AI clip a video I recorded myself?',
-        a: 'Its pricing page lists YouTube links on every plan and Google Drive or public URLs from the Lite plan up; uploading a local file is not listed there. OpenShorts accepts a YouTube link or a direct upload on every plan, including the free one.',
+        a: 'Its pricing page lists YouTube links on every plan and Google Drive or public URLs from the Lite plan up; uploading a local file is not listed there. Clipedit accepts a YouTube link or a direct upload on every plan, including the free one.',
       },
     ],
     tiers: [
@@ -398,17 +389,17 @@ export const COMPETITORS = {
       'A focused YouTube-to-Shorts workflow with face tracking and brand presets',
     ],
     whereWeDiffer: [
-      'OpenShorts is MIT-licensed and self-hostable; 2short.ai is a closed cloud service.',
-      'OpenShorts takes a local upload on every plan; 2short.ai lists link imports (YouTube, Drive, URL).',
-      'OpenShorts adds layouts a single centred crop cannot do: two speakers stacked, screen recordings over the presenter, a webcam inset enlarged. It also dubs into 30+ languages with your own ElevenLabs key.',
-      '2short.ai is cheaper per hour of source than OpenShorts Cloud and keeps its free exports unwatermarked, which ours are not. That is a real advantage.',
+      'Clipedit is MIT-licensed and self-hostable; 2short.ai is a closed cloud service.',
+      'Clipedit takes a local upload on every plan; 2short.ai lists link imports (YouTube, Drive, URL).',
+      'Clipedit adds layouts a single centred crop cannot do: two speakers stacked, screen recordings over the presenter, a webcam inset enlarged. It also dubs into 30+ languages with your own ElevenLabs key.',
+      '2short.ai is cheaper per hour of source than Clipedit Cloud and keeps its free exports unwatermarked, which ours are not. That is a real advantage.',
     ],
     bestFor:
-      '2short.ai is the better pick if your sources are YouTube videos, you want the lowest price per hour and a single face-tracked crop is enough. OpenShorts is the better pick for uploads, podcasts with two people on camera, screen recordings, or a free self-hosted setup.',
+      '2short.ai is the better pick if your sources are YouTube videos, you want the lowest price per hour and a single face-tracked crop is enough. Clipedit is the better pick for uploads, podcasts with two people on camera, screen recordings, or a free self-hosted setup.',
     tldr: [
-      '2short.ai is a YouTube-to-Shorts web app from $9.90/month, with a free plan of 30 minutes a month and no watermark. OpenShorts is open source: free when you run it yourself, or hosted from $12/month.',
-      'Both find the moments and reframe them to 9:16 with face tracking. OpenShorts adds two-speaker, screencast and webcam-inset layouts, dubbing into 30+ languages with your own ElevenLabs key, and direct uploads on every plan.',
-      'Pick 2short.ai for the lowest price per hour on YouTube sources. Pick OpenShorts for uploads, multi-person footage, self-hosting or changing the pipeline.',
+      '2short.ai is a YouTube-to-Shorts web app from $9.90/month, with a free plan of 30 minutes a month and no watermark. Clipedit is open source: free when you run it yourself, or hosted from $12/month.',
+      'Both find the moments and reframe them to 9:16 with face tracking. Clipedit adds two-speaker, screencast and webcam-inset layouts, dubbing into 30+ languages with your own ElevenLabs key, and direct uploads on every plan.',
+      'Pick 2short.ai for the lowest price per hour on YouTube sources. Pick Clipedit for uploads, multi-person footage, self-hosting or changing the pipeline.',
     ],
     rows: { 'Usage cap': 'Metered in hours of analysis per month' },
   },
@@ -417,7 +408,7 @@ export const COMPETITORS = {
       { k: 'Free plan', v: 'None', s: '3 free videos at sign-up' },
       { k: 'Clipping from', v: '$29/mo', s: 'Professional ($23 yearly); Starter has none' },
       { k: 'Billed by', v: 'Shorts', s: '20, 50 or unlimited a month' },
-      { k: 'Open source', v: 'No', s: 'Cloud only. OpenShorts: MIT, self-hostable' },
+      { k: 'Open source', v: 'No', s: 'Cloud only. Clipedit: MIT, self-hostable' },
     ],
     pick: {
       them: ['You want faceless, avatar and prompt-to-video shorts too', 'You want captions translated into 100+ languages', 'One subscription for many formats matters more than depth'],
@@ -439,7 +430,7 @@ export const COMPETITORS = {
     extraFaq: [
       {
         q: 'Is SendShort free?',
-        a: 'There is no free plan: SendShort gives 3 free videos at sign-up and offers a refund within 24 hours of paying. Plans cost $19, $29 and $59 a month, or $15, $23 and $47 billed yearly, and clipping long videos starts on the $29 Professional plan. OpenShorts self-hosted is free; OpenShorts Cloud clips your first video free up to 60 minutes, then 20 minutes a month.',
+        a: 'There is no free plan: SendShort gives 3 free videos at sign-up and offers a refund within 24 hours of paying. Plans cost $19, $29 and $59 a month, or $15, $23 and $47 billed yearly, and clipping long videos starts on the $29 Professional plan. Clipedit self-hosted is free; Clipedit Cloud clips your first video free up to 60 minutes, then 20 minutes a month.',
       },
     ],
     tiers: [
@@ -456,17 +447,17 @@ export const COMPETITORS = {
       'An API and an agent interface for Claude, ChatGPT and Grok',
     ],
     whereWeDiffer: [
-      'OpenShorts is MIT-licensed and self-hostable; SendShort is a closed cloud service.',
-      'OpenShorts clips long videos on every plan, the free one included; SendShort starts long-video clipping at $29/month.',
-      'OpenShorts reframes with face tracking plus two-speaker, screencast and webcam-inset layouts, which is the hard part of clipping a podcast or a stream.',
+      'Clipedit is MIT-licensed and self-hostable; SendShort is a closed cloud service.',
+      'Clipedit clips long videos on every plan, the free one included; SendShort starts long-video clipping at $29/month.',
+      'Clipedit reframes with face tracking plus two-speaker, screencast and webcam-inset layouts, which is the hard part of clipping a podcast or a stream.',
       'SendShort makes more kinds of short video than we do. If faceless or prompt-to-video content is the plan, it covers that and we do not.',
     ],
     bestFor:
-      'SendShort is the better pick if you want one subscription for faceless videos, avatars and clips. OpenShorts is the better pick if the job is turning your own long recordings into clips, cheaply or self-hosted.',
+      'SendShort is the better pick if you want one subscription for faceless videos, avatars and clips. Clipedit is the better pick if the job is turning your own long recordings into clips, cheaply or self-hosted.',
     tldr: [
-      'SendShort is a short-form video suite from $19/month ($15 yearly), but clipping long videos starts on the $29/month plan. OpenShorts is open source: free when you run it yourself, or hosted from $12/month with clipping on every plan.',
-      'SendShort covers faceless videos, avatars and caption translation into 100+ languages. OpenShorts goes deeper on the clipping itself: moment scoring, face tracking, two-speaker and screencast layouts, dubbing into 30+ languages.',
-      'Pick SendShort for many formats in one tool. Pick OpenShorts to clip your own long recordings, self-host, or keep the cost down.',
+      'SendShort is a short-form video suite from $19/month ($15 yearly), but clipping long videos starts on the $29/month plan. Clipedit is open source: free when you run it yourself, or hosted from $12/month with clipping on every plan.',
+      'SendShort covers faceless videos, avatars and caption translation into 100+ languages. Clipedit goes deeper on the clipping itself: moment scoring, face tracking, two-speaker and screencast layouts, dubbing into 30+ languages.',
+      'Pick SendShort for many formats in one tool. Pick Clipedit to clip your own long recordings, self-host, or keep the cost down.',
     ],
     rows: {
       'AI voice dubbing, 30+ languages': 'Caption translation and AI voice-over ($29 plan and up)',
@@ -518,14 +509,14 @@ export const CITED_STATS = [
 export const PRICE_MODELS = {
   // The edition the hosted plans are a convenience over: same pipeline, your
   // machine, no meter. Shown as its own bar so the calculator never implies the
-  // hosted price is the only OpenShorts price.
+  // hosted price is the only Clipedit price.
   'openshorts-self': {
-    name: 'OpenShorts self-hosted',
+    name: 'Clipedit self-hosted',
     unit: 'your machine, MIT',
     plans: [{ name: 'Docker, no watermark, no cap', monthly: { minutes: 1e9, price: 0 } }],
   },
   openshorts: {
-    name: 'OpenShorts Cloud',
+    name: 'Clipedit Cloud',
     unit: 'per source minute',
     checked: '2026-10-05',
     plans: [

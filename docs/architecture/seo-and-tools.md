@@ -1,8 +1,8 @@
 # SEO surface, free tools and attribution
 
-This document describes the upstream marketing implementation. This fork's
-frontend opens the clip generator directly and does not run the SEO plugin or
-build standalone tool pages. See [Clip generator interface](clip-generator-ui.md).
+This fork opens the app directly and retains the full tool interface, explicit
+landing route and generated standalone pages. The visible app branding is
+Clipedit. See [Clipedit interface](clip-generator-ui.md).
 
 ## Crawler-visible SPA (`dashboard/vite-plugin-seo.js`)
 

@@ -2,7 +2,7 @@
 
 ## Active fork: Clipedit studio
 
-The clip-generator fork uses a text-only **Clipedit** wordmark, charcoal surfaces,
+The full dashboard uses a text-only **Clipedit** wordmark, charcoal surfaces,
 lime accents (`#c5f36b`) and Geist for both headings and body. Its app workspace
 uses a left-aligned introduction and a source panel with segmented upload/link
 tabs. Cards use 18px corners; inputs and buttons use 10px corners. UI labels use
@@ -10,8 +10,8 @@ natural casing, while small source labels remain uppercase. There is no brand
 icon in the app or browser tab. `src/clipedit.css`, `tokens.css` and the matching
 Tailwind colors implement this presentation without changing control behavior.
 
-These choices override the upstream theme and typography below, which remain
-as reference for the unmounted marketing sources.
+These choices override the upstream theme and typography below. All original
+tool screens remain available with their existing account and provider rules.
 
 ## Upstream design reference
 

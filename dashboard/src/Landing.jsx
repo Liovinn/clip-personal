@@ -6,11 +6,11 @@ import './landing.css';
 
 const APPARATUS_CALLOUTS = ['RATIO · 9:16', 'CLIPS · 3–15', 'HOOK · AUTO', 'SUBS · WORD-LEVEL'];
 
-// Real clips OpenShorts made from Creative Commons (CC BY) sources. `video` is
+// Real clips Clipedit made from Creative Commons (CC BY) sources. `video` is
 // the original and the clip side by side, in sync; `vertical` is the clip on
 // its own for the hero. The credit is what the licence asks for, so it stays
 // next to the video that uses it.
-// The six clips OpenShorts cut from that episode with no clip-count setting,
+// The six clips Clipedit cut from that episode with no clip-count setting,
 // in source order, with the score the moment picker gave each.
 const EPISODE_CLIPS = [
   { n: 1, score: 88, title: 'I knew I was marrying her on our third date' },
@@ -84,7 +84,7 @@ const SHOWCASE = [
     id: 'moments', tab: 'finds the moments',
     title: 'every clip scored before you see it',
     body: 'Gemini reads the word-level transcript and the scene cuts, scores each moment out of 100, and writes the title and the description for every platform.',
-    media: { type: 'img', src: '/screens/app-clipcard.webp', w: 1153, h: 441, alt: 'A clip in OpenShorts with its viral score, titles and edit actions' },
+    media: { type: 'img', src: '/screens/app-clipcard.webp', w: 1153, h: 441, alt: 'A clip in Clipedit with its viral score, titles and edit actions' },
   },
   {
     id: 'reframe', tab: 'reframes any layout',
@@ -108,7 +108,7 @@ const SHOWCASE = [
     id: 'editor', tab: 'a real editor',
     title: 'fix anything, down to the word',
     body: 'Source and program monitors side by side with the full transcript: click a word to set a cut, add segments, change the framing, re-render in seconds.',
-    media: { type: 'img', src: '/screens/app-editor.webp', w: 1568, h: 652, alt: 'The OpenShorts clip editor with source monitor, program monitor, transcript and segments' },
+    media: { type: 'img', src: '/screens/app-editor.webp', w: 1568, h: 652, alt: 'The Clipedit clip editor with source monitor, program monitor, transcript and segments' },
   },
   {
     id: 'autopilot', tab: 'autopilot',
@@ -119,8 +119,8 @@ const SHOWCASE = [
   {
     id: 'agents', tab: 'inside claude & chatgpt',
     title: 'clip from a chat',
-    body: 'Add OpenShorts to Claude or ChatGPT with one URL and ask for clips. Same pipeline, same minutes, no API key to manage.',
-    media: { type: 'img', src: '/screens/connect-an-agent.webp', w: 684, h: 366, alt: 'Connecting OpenShorts to an AI agent' },
+    body: 'Add Clipedit to Claude or ChatGPT with one URL and ask for clips. Same pipeline, same minutes, no API key to manage.',
+    media: { type: 'img', src: '/screens/connect-an-agent.webp', w: 684, h: 366, alt: 'Connecting Clipedit to an AI agent' },
   },
   {
     id: 'ugc', tab: 'ai ugc videos',
@@ -358,28 +358,28 @@ export default function Landing({ onLaunchApp }) {
 
   const faqs = [
     {
-      question: "Is OpenShorts really free? What's the catch?",
+      question: "Is Clipedit really free? What's the catch?",
       answer: "There is no catch, but there are two different things on offer. (1) Self-hosted is 100% free and open source: you run it with Docker on your own machine, bring your own API keys, and there are no watermarks, no usage limits and no subscription. What it costs you is hardware and time. On a typical CPU an 8-minute video takes 5 to 8 minutes to process, and you need your own Google Gemini key (required, free tier is 1,500 requests/day), plus ElevenLabs for dubbing and fal.ai for AI Shorts if you want those. (2) Hosted at openshorts.app is the same software with the running costs covered: our NVIDIA GPU clips that same 8-minute video in about 50 seconds, the Gemini key is included so there is nothing to create or paste, auto-posting to TikTok, Instagram and YouTube is already wired up, and your clips are stored and re-openable from any browser. Its free plan clips your first video whole up to 60 minutes, then 20 minutes a month, with a watermark and no credit card; paid plans start at $12/mo for 100 minutes without watermark. So: free if you are happy to run it yourself, paid if you would rather it just ran fast. For reference, Opus Clip starts at $15/month and bills a credit per minute of source video."
     },
     {
-      question: "What is OpenShorts and how does it work?",
-      answer: "OpenShorts is a free, open source AI clip generator that transforms your long-form videos — podcasts, webinars, livestreams, vlogs, interviews — into viral-ready short clips in 9:16 vertical format. It uses a multi-step AI pipeline: faster-whisper for transcription with word-level timestamps, PySceneDetect for scene boundary detection, and Google Gemini 3.1 Flash-Lite AI for identifying the most engaging viral moments. According to HubSpot's 2025 State of Marketing report, short-form video delivers the highest ROI of any content format, and repurposing long-form content into shorts increases total reach by up to 300%."
+      question: "What is Clipedit and how does it work?",
+      answer: "Clipedit is a free, open source AI clip generator that transforms your long-form videos — podcasts, webinars, livestreams, vlogs, interviews — into viral-ready short clips in 9:16 vertical format. It uses a multi-step AI pipeline: faster-whisper for transcription with word-level timestamps, PySceneDetect for scene boundary detection, and Google Gemini 3.1 Flash-Lite AI for identifying the most engaging viral moments. According to HubSpot's 2025 State of Marketing report, short-form video delivers the highest ROI of any content format, and repurposing long-form content into shorts increases total reach by up to 300%."
     },
     {
-      question: "How does OpenShorts compare to Opus Clip?",
-      answer: "OpenShorts is an open source alternative to Opus Clip. Both offer AI viral moment detection and smart vertical cropping. Key differences: OpenShorts is free when self-hosted and $12/month hosted, against Opus Clip from $15/month billed per source minute. OpenShorts can run on your own infrastructure (full data privacy); Opus Clip is cloud-only. OpenShorts uses Google Gemini 3.1 Flash-Lite for AI analysis vs Opus Clip's proprietary model. OpenShorts adds two-speaker and screencast layouts, AI UGC videos with lip-synced actors, and an MCP server for Claude and ChatGPT. The honest trade-off: Opus Clip has the larger caption-style library."
+      question: "How does Clipedit compare to Opus Clip?",
+      answer: "Clipedit is an open source alternative to Opus Clip. Both offer AI viral moment detection and smart vertical cropping. Key differences: Clipedit is free when self-hosted and $12/month hosted, against Opus Clip from $15/month billed per source minute. Clipedit can run on your own infrastructure (full data privacy); Opus Clip is cloud-only. Clipedit uses Google Gemini 3.1 Flash-Lite for AI analysis vs Opus Clip's proprietary model. Clipedit adds two-speaker and screencast layouts, AI UGC videos with lip-synced actors, and an MCP server for Claude and ChatGPT. The honest trade-off: Opus Clip has the larger caption-style library."
     },
     {
       question: "How do I turn a long-form video into TikTok or Reels clips?",
-      answer: "Upload your long-form video into OpenShorts, enter your free Gemini API key, and click Process. The AI transcribes it with faster-whisper, detects the best viral moments using Google Gemini 3.1 Flash-Lite, and crops them to 9:16 vertical format with MediaPipe face tracking. According to Wyzowl's 2025 Video Marketing Statistics report, 91% of businesses use video as a marketing tool, and repurposed short-form clips drive 2.5x more engagement than original content."
+      answer: "Upload your long-form video into Clipedit, enter your free Gemini API key, and click Process. The AI transcribes it with faster-whisper, detects the best viral moments using Google Gemini 3.1 Flash-Lite, and crops them to 9:16 vertical format with MediaPipe face tracking. According to Wyzowl's 2025 Video Marketing Statistics report, 91% of businesses use video as a marketing tool, and repurposed short-form clips drive 2.5x more engagement than original content."
     },
     {
-      question: "Can OpenShorts generate YouTube thumbnails and titles for free?",
-      answer: "Yes. OpenShorts includes a free AI YouTube thumbnail generator, a free AI YouTube title generator, and a free AI YouTube description generator — all powered by Google Gemini 3.1 Flash-Lite. Upload your video and the AI suggests 10 viral title options with an interactive refinement chat. Then it generates multiple thumbnail designs using AI image generation — upload a face photo and background image for personalized results. The studio also auto-generates YouTube descriptions with chapter timestamps and lets you publish directly to YouTube. Everything is 100% free with the Gemini free tier."
+      question: "Can Clipedit generate YouTube thumbnails and titles for free?",
+      answer: "Yes. Clipedit includes a free AI YouTube thumbnail generator, a free AI YouTube title generator, and a free AI YouTube description generator — all powered by Google Gemini 3.1 Flash-Lite. Upload your video and the AI suggests 10 viral title options with an interactive refinement chat. Then it generates multiple thumbnail designs using AI image generation — upload a face photo and background image for personalized results. The studio also auto-generates YouTube descriptions with chapter timestamps and lets you publish directly to YouTube. Everything is 100% free with the Gemini free tier."
     },
     {
       question: "What is the AI UGC Video Generator?",
-      answer: "OpenShorts includes an AI UGC (User Generated Content) video creator that generates marketing videos with AI actors for any product or business. You describe your product or paste a website URL — the AI writes a viral script, generates a realistic AI actor with lip-synced voiceover, adds b-roll visuals, TikTok-style subtitles, and hook text overlays. The result is a ready-to-post vertical video for TikTok, Instagram Reels, or YouTube Shorts. Two cost modes: Low Cost (~$0.65/video using Hailuo + VEED Lipsync) and Premium (~$2/video using Kling Avatar v2)."
+      answer: "Clipedit includes an AI UGC (User Generated Content) video creator that generates marketing videos with AI actors for any product or business. You describe your product or paste a website URL — the AI writes a viral script, generates a realistic AI actor with lip-synced voiceover, adds b-roll visuals, TikTok-style subtitles, and hook text overlays. The result is a ready-to-post vertical video for TikTok, Instagram Reels, or YouTube Shorts. Two cost modes: Low Cost (~$0.65/video using Hailuo + VEED Lipsync) and Premium (~$2/video using Kling Avatar v2)."
     },
     {
       question: "Can I use the AI UGC Video Generator for any type of business?",
@@ -387,31 +387,31 @@ export default function Landing({ onLaunchApp }) {
     },
     {
       question: "How much does it cost to generate an AI UGC video?",
-      answer: "OpenShorts itself is free, but the AI Shorts feature uses external APIs (fal.ai for video generation, ElevenLabs for voiceover) that charge per use. Low Cost mode costs approximately $0.65 per video (Flux image $0.05 + ElevenLabs voice $0.10 + Hailuo img2video $0.19 + VEED Lipsync $0.20 + b-roll $0.10). Premium mode costs approximately $2.00 per video using Kling Avatar v2 for higher quality. Both modes are significantly cheaper than hiring UGC creators ($50-500 per video) or using platforms like HeyGen ($24-180/month)."
+      answer: "Clipedit itself is free, but the AI Shorts feature uses external APIs (fal.ai for video generation, ElevenLabs for voiceover) that charge per use. Low Cost mode costs approximately $0.65 per video (Flux image $0.05 + ElevenLabs voice $0.10 + Hailuo img2video $0.19 + VEED Lipsync $0.20 + b-roll $0.10). Premium mode costs approximately $2.00 per video using Kling Avatar v2 for higher quality. Both modes are significantly cheaper than hiring UGC creators ($50-500 per video) or using platforms like HeyGen ($24-180/month)."
     },
     {
-      question: "What AI does OpenShorts use for viral moment detection?",
-      answer: "OpenShorts uses Google Gemini 3.1 Flash-Lite, Google's latest multimodal AI model, for viral moment detection and title generation. The AI receives the full video transcript with timestamps, scene boundary data from PySceneDetect, and analyzes engagement patterns to identify the 3-15 most shareable moments. Each clip is scored based on emotional impact, hook strength, and viral potential — similar to how platforms like TikTok and YouTube rank content."
+      question: "What AI does Clipedit use for viral moment detection?",
+      answer: "Clipedit uses Google Gemini 3.1 Flash-Lite, Google's latest multimodal AI model, for viral moment detection and title generation. The AI receives the full video transcript with timestamps, scene boundary data from PySceneDetect, and analyzes engagement patterns to identify the 3-15 most shareable moments. Each clip is scored based on emotional impact, hook strength, and viral potential — similar to how platforms like TikTok and YouTube rank content."
     },
     {
-      question: "Can OpenShorts translate and dub videos into other languages?",
-      answer: "Yes, with your own ElevenLabs API key, both in the cloud and self-hosted: add the key in Settings and a clip is dubbed into any of 30+ languages while keeping the original speaker's voice. After dubbing, OpenShorts re-transcribes the new audio and burns subtitles in the target language. ElevenLabs bills the dubbing to your key; it is not included in the OpenShorts plans."
+      question: "Can Clipedit translate and dub videos into other languages?",
+      answer: "Yes, with your own ElevenLabs API key, both in the cloud and self-hosted: add the key in Settings and a clip is dubbed into any of 30+ languages while keeping the original speaker's voice. After dubbing, Clipedit re-transcribes the new audio and burns subtitles in the target language. ElevenLabs bills the dubbing to your key; it is not included in the Clipedit plans."
     },
     {
       question: "How does the smart vertical cropping work?",
-      answer: "OpenShorts offers two intelligent cropping modes for converting 16:9 horizontal video to 9:16 vertical format. TRACK mode uses MediaPipe face detection with YOLOv8 as fallback to follow a single subject with 'Heavy Tripod' stabilization — the camera moves smoothly like a professional cameraman. GENERAL mode handles group shots and landscapes by creating a blurred background layout. A SpeakerTracker prevents rapid switching between subjects and handles temporary occlusions for smooth results."
+      answer: "Clipedit offers two intelligent cropping modes for converting 16:9 horizontal video to 9:16 vertical format. TRACK mode uses MediaPipe face detection with YOLOv8 as fallback to follow a single subject with 'Heavy Tripod' stabilization — the camera moves smoothly like a professional cameraman. GENERAL mode handles group shots and landscapes by creating a blurred background layout. A SpeakerTracker prevents rapid switching between subjects and handles temporary occlusions for smooth results."
     },
     {
       question: "Is there a free open source clip generator?",
-      answer: "Yes. OpenShorts is an open source clip generator (also known as open source clipping software or an AI video clipper) under the MIT licence. Self-hosted, it generates unlimited clips with no watermarks, no usage limits and no subscription fees. OpenShorts Cloud, the hosted version, clips your first video free up to 60 minutes, then 20 minutes a month with a watermark, and paid plans start at $12/month without one. It also includes a free AI YouTube thumbnail generator, free AI YouTube title generator, and free AI YouTube description generator — features that other clip generators charge extra for. You self-host it with Docker on your own machine for full privacy and control."
+      answer: "Yes. Clipedit is an open source clip generator (also known as open source clipping software or an AI video clipper) under the MIT licence. Self-hosted, it generates unlimited clips with no watermarks, no usage limits and no subscription fees. Clipedit Cloud, the hosted version, clips your first video free up to 60 minutes, then 20 minutes a month with a watermark, and paid plans start at $12/month without one. It also includes a free AI YouTube thumbnail generator, free AI YouTube title generator, and free AI YouTube description generator — features that other clip generators charge extra for. You self-host it with Docker on your own machine for full privacy and control."
     },
     {
-      question: "Can I automate OpenShorts from Claude, ChatGPT or n8n?",
-      answer: "Yes. OpenShorts has a native MCP server at mcp.openshorts.app/mcp plus a REST API with per-user keys and completion webhooks, so an AI agent can run the whole flow: submit a video URL, wait for processing, list the clips and publish them to TikTok, Instagram or YouTube. This is where the hosted service shines: an agent needs an endpoint that is always on, and the hosted one is, with the API key created in your account page in one click. The self-hosted edition serves the same /mcp endpoint, but only while your own machine is running. There is also a zero-dependency CLI (pip install openshorts) and an importable n8n workflow. Full guide at openshorts.app/mcp."
+      question: "Can I automate Clipedit from Claude, ChatGPT or n8n?",
+      answer: "Yes. Clipedit has a native MCP server at mcp.openshorts.app/mcp plus a REST API with per-user keys and completion webhooks, so an AI agent can run the whole flow: submit a video URL, wait for processing, list the clips and publish them to TikTok, Instagram or YouTube. This is where the hosted service shines: an agent needs an endpoint that is always on, and the hosted one is, with the API key created in your account page in one click. The self-hosted edition serves the same /mcp endpoint, but only while your own machine is running. There is also a zero-dependency CLI (pip install openshorts) and an importable n8n workflow. Full guide at openshorts.app/mcp."
     },
     {
-      question: "What are the system requirements to run OpenShorts?",
-      answer: "OpenShorts runs on any system with Docker installed. The recommended setup is 8GB+ RAM and a modern multi-core CPU. GPU acceleration (NVIDIA CUDA) is optional but speeds up video processing significantly. The Docker Compose setup handles all dependencies automatically — Python 3.11, FFmpeg, YOLOv8, MediaPipe, faster-whisper, and the React dashboard. It works on Linux, macOS, and Windows (via WSL2/Docker Desktop)."
+      question: "What are the system requirements to run Clipedit?",
+      answer: "Clipedit runs on any system with Docker installed. The recommended setup is 8GB+ RAM and a modern multi-core CPU. GPU acceleration (NVIDIA CUDA) is optional but speeds up video processing significantly. The Docker Compose setup handles all dependencies automatically — Python 3.11, FFmpeg, YOLOv8, MediaPipe, faster-whisper, and the React dashboard. It works on Linux, macOS, and Windows (via WSL2/Docker Desktop)."
     }
   ];
 
@@ -424,9 +424,8 @@ export default function Landing({ onLaunchApp }) {
       {/* Navigation — N9 edge-aligned minimal */}
       <nav className="fixed top-0 w-full z-50 bg-paper border-b border-rule">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-          <a href="/" className="flex items-center gap-2.5 font-display text-xl lowercase text-ink tracking-tight">
-            <img src="/logo-openshorts.png" alt="OpenShorts logo" className="w-7 h-7" width="28" height="28" />
-            <span>openshorts</span>
+          <a href="/" className="clipedit-wordmark flex items-center gap-2.5">
+            <span>Clipedit</span>
           </a>
           <div className="hidden md:flex items-center gap-7 text-sm lowercase text-muted">
             <a href="#features" className="hover:text-ink transition-colors">Features</a>
@@ -524,7 +523,7 @@ export default function Landing({ onLaunchApp }) {
           </div>
 
           {/* Apparatus — instrument bezel holding a real 9:16 clip */}
-          <figure className="apparatus" aria-label="example vertical clip generated by openshorts">
+          <figure className="apparatus" aria-label="example vertical clip generated by Clipedit">
             <div className="apparatus-shell">
               <span className="apparatus-glow" aria-hidden="true" />
               <div className="apparatus-chamber">
@@ -589,7 +588,7 @@ export default function Landing({ onLaunchApp }) {
         </div>
       </section>
 
-      {/* One video in, many clips out: the real clips OpenShorts cut from one
+      {/* One video in, many clips out: the real clips Clipedit cut from one
           CC BY episode with default settings, with the score the AI gave each.
           The pattern the market leader opens with, shown with our own output. */}
       <section className="py-20 px-6 border-b border-rule">
@@ -619,7 +618,7 @@ export default function Landing({ onLaunchApp }) {
             </div>
           </div>
           <p className="mt-6 text-xs text-muted">
-            Source: <a href="https://www.youtube.com/watch?v=-KbQj_vboOU" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-ink">Turn the Tables with Dan and Shoshana Jordan</a>, Heritage of Faith, licensed CC BY. Clipped by OpenShorts, scores as the AI gave them.
+            Source: <a href="https://www.youtube.com/watch?v=-KbQj_vboOU" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-ink">Turn the Tables with Dan and Shoshana Jordan</a>, Heritage of Faith, licensed CC BY. Clipped by Clipedit, scores as the AI gave them.
           </p>
         </div>
       </section>
@@ -646,7 +645,7 @@ export default function Landing({ onLaunchApp }) {
               ))}
             </div>
           )}
-          <figure className="crop-frame crop-frame-16-9 w-full" aria-label="original video next to the vertical clip OpenShorts made from it">
+          <figure className="crop-frame crop-frame-16-9 w-full" aria-label="original video next to the vertical clip Clipedit made from it">
             <video
               key={DEMOS[cropDemo].id}
               src={DEMOS[cropDemo].video}
@@ -662,7 +661,7 @@ export default function Landing({ onLaunchApp }) {
             />
           </figure>
           <p className="mt-6 text-xs text-muted">
-            Source: <a href={DEMOS[cropDemo].creditUrl} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-ink">{DEMOS[cropDemo].credit}</a>, {DEMOS[cropDemo].creditBy}, licensed CC BY. Clipped by OpenShorts.
+            Source: <a href={DEMOS[cropDemo].creditUrl} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-ink">{DEMOS[cropDemo].credit}</a>, {DEMOS[cropDemo].creditBy}, licensed CC BY. Clipped by Clipedit.
           </p>
           <div className="mt-10 flex flex-wrap items-center gap-4">
             <button
@@ -697,7 +696,7 @@ export default function Landing({ onLaunchApp }) {
       {/* Two ways to use it: free self-host vs paid hosted */}
       <section className="py-20 px-6 border-t border-rule">
         <div className="max-w-4xl mx-auto">
-          <SectionHeader eyebrow="05 · Deploy" title="Two ways to use OpenShorts">
+          <SectionHeader eyebrow="05 · Deploy" title="Two ways to use Clipedit">
             The same open source software, running either on our GPU or on your machine.
           </SectionHeader>
           <div className="grid md:grid-cols-2 gap-6">
@@ -758,7 +757,7 @@ export default function Landing({ onLaunchApp }) {
       <section id="comparison" className="py-20 px-6 border-t border-rule">
         <div className="max-w-4xl mx-auto">
           <SectionHeader eyebrow="07 · Comparison" title="Free Clip Generator vs Paid Alternatives">
-            Hosted OpenShorts starts at $12/mo, or self-host it free. Opus Clip starts at $15/month, Kapwing at $24/month.
+            Hosted Clipedit starts at $12/mo, or self-host it free. Opus Clip starts at $15/month, Kapwing at $24/month.
           </SectionHeader>
           <div className="overflow-x-auto">
             <table className="w-full">
@@ -766,7 +765,7 @@ export default function Landing({ onLaunchApp }) {
                 <tr className="border-b border-rule2">
                   <th className="py-3 px-4 text-left text-sm text-muted font-medium">Feature</th>
                   <th className="py-3 px-4 text-center text-sm font-medium">
-                    <span className="text-brass">OpenShorts</span>
+                    <span className="text-brass">Clipedit</span>
                   </th>
                   <th className="py-3 px-4 text-center text-sm text-muted font-medium">Opus Clip</th>
                   <th className="py-3 px-4 text-center text-sm text-muted font-medium">Kapwing</th>
@@ -797,7 +796,7 @@ export default function Landing({ onLaunchApp }) {
       {/* Use Cases */}
       <section className="py-20 px-6 border-t border-rule">
         <div className="max-w-5xl mx-auto">
-          <SectionHeader eyebrow="08 · Use Cases" title="Who Uses OpenShorts?">
+          <SectionHeader eyebrow="08 · Use Cases" title="Who Uses Clipedit?">
             Creators, marketers, and agencies scaling short-form video production.
           </SectionHeader>
           <div className="grid md:grid-cols-3 gap-5">
@@ -870,7 +869,7 @@ export default function Landing({ onLaunchApp }) {
       <section id="faq" className="py-20 px-6 border-t border-rule">
         <div className="max-w-3xl mx-auto">
           <SectionHeader eyebrow="10 · FAQ" title="Frequently Asked Questions">
-            Everything you need to know about OpenShorts, from setup to features.
+            Everything you need to know about Clipedit, from setup to features.
           </SectionHeader>
           <div className="divide-y divide-rule border-y border-rule">
             {faqs.map((faq, i) => (
@@ -913,7 +912,7 @@ export default function Landing({ onLaunchApp }) {
                     </div>
                     <h3 className="font-display text-xl lowercase text-ink mb-1">Google Gemini API</h3>
                     <div className="mb-3"><span className="badge-ok">Free tier: 1,500 req/day</span></div>
-                    <p className="text-muted text-sm leading-relaxed">Powers all AI features: viral moment detection, title generation, video effects, YouTube thumbnail creation, and description writing. The core engine of OpenShorts.</p>
+                    <p className="text-muted text-sm leading-relaxed">Powers all AI features: viral moment detection, title generation, video effects, YouTube thumbnail creation, and description writing. The core engine of Clipedit.</p>
                   </div>
                   <div className="card p-6 relative">
                     <span className="readout absolute top-4 right-4 border border-rule rounded-full px-2.5 py-1">Optional</span>
@@ -931,7 +930,7 @@ export default function Landing({ onLaunchApp }) {
                     </div>
                     <h3 className="font-display text-xl lowercase text-ink mb-1">Upload-Post API</h3>
                     <div className="mb-3"><span className="badge-ok">Free tier included</span></div>
-                    <p className="text-muted text-sm leading-relaxed">Enables direct publishing to YouTube, TikTok, and Instagram Reels from the dashboard. <a href="https://www.upload-post.com" target="_blank" rel="noopener noreferrer" className="text-brass underline hover:brightness-110">Social media API</a> that lets you post your clips and thumbnails without leaving OpenShorts.</p>
+                    <p className="text-muted text-sm leading-relaxed">Enables direct publishing to YouTube, TikTok, and Instagram Reels from the dashboard. <a href="https://www.upload-post.com" target="_blank" rel="noopener noreferrer" className="text-brass underline hover:brightness-110">Social media API</a> that lets you post your clips and thumbnails without leaving Clipedit.</p>
                   </div>
                 </div>
                 <div className="grid md:grid-cols-2 gap-5 mt-5">
@@ -1075,8 +1074,7 @@ export default function Landing({ onLaunchApp }) {
           </nav>
           <div className="border-t border-rule pt-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <img src="/logo-openshorts.png" alt="OpenShorts" className="w-6 h-6" />
-              <span className="text-sm text-muted">OpenShorts — Free Open Source Clip Generator & AI UGC Video Creator</span>
+              <span className="text-sm text-muted">Clipedit — Free Open Source Clip Generator & AI UGC Video Creator</span>
             </div>
             <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm lowercase text-muted">
               <a href="https://github.com/mutonby/openshorts" target="_blank" rel="noopener noreferrer" className="hover:text-ink transition-colors">GitHub</a>

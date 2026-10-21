@@ -1,28 +1,24 @@
-# Clip generator interface
+# Clipedit interface
 
-This fork opens directly into the clip generator. Its desktop navigation,
-mobile drawer and mobile shortcuts expose only Clip Generator and Settings.
-Settings contains the Gemini key input for self-hosted installs, or an account
-status message in managed mode. Existing account and billing routes remain for
-managed deployments. Their pricing copy describes clipping only, and the account
-screen no longer mounts social analytics, API-key management or MCP connections.
-Successful checkouts return to the account screen without a social connection
-redirect. Billing amounts, quotas and checkout logic are otherwise unchanged.
+This fork opens directly into the app and retains its full original feature set.
+The Clipedit wordmark and studio styling apply to the restored interface.
 
-The generator still accepts video URLs and uploaded files and exposes the same
-format, duration, layout and auto-hook controls. Generated clips retain previews,
-clip editing, reframing, effects, subtitles, hooks, captions and downloads.
-Job ZIP downloads and configured VPS exports remain available.
+The desktop navigation and mobile drawer include Clip Generator, AI Shorts,
+AI Agent, UGC Gallery, YouTube Studio and Settings. Mobile shortcuts include a
+More button for the rest of the navigation. Autopilot and History retain their
+original cloud/account availability conditions.
 
-AI Shorts, AI Agent, UGC Gallery, YouTube Studio, Autopilot and History are no
-longer mounted. Social account connections, posting, scheduling, voice dubbing
-and their credential inputs are removed from this interface. Saved sessions and
-old tab deep links fall back to the clip generator when their tab was removed.
+Settings includes Gemini, social connections, ElevenLabs and fal.ai inputs, plus
+MCP connection instructions. Social publishing remains optional for clipping;
+the extra provider credentials are only needed for their corresponding tools.
+Generated clips retain editing, reframing, effects, subtitles, hooks, voice
+dubbing, posting and scheduling. ZIP downloads and configured VPS exports remain.
 
-The frontend build uses the app entry point only. The upstream marketing page
-and standalone free tools are no longer emitted by the SEO plugin. Their source
-files and the optional backend APIs remain in the repository; this is an
-interface simplification, not removal or authorization of backend endpoints.
+Saved sessions, tool deep links, project history, social account controls and
+the OAuth consent route use their original behavior. The managed account screen
+again includes social analytics, MCP/API connections and its original billing
+flow. The explicit landing route, SEO plugin and standalone tool build entries
+are restored. Existing API and account permissions remain unchanged.
 
 The video processing pipeline, model choices and generation request defaults
 are unchanged. This change does not deploy a Serverless worker or add payments.

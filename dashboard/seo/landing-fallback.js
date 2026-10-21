@@ -62,21 +62,21 @@ const STEPS = [
 
 const FAQ = [
   [
-    'Is OpenShorts free? What is the catch?',
+    'Is Clipedit free? What is the catch?',
     CANONICAL_ANSWERS.isItFree +
-      ' Self-hosted costs you hardware and time: on a typical CPU an 8-minute video takes 5 to 8 minutes to process, and you supply your own Google Gemini key, whose free tier covers 1,500 requests a day. On OpenShorts Cloud an NVIDIA GPU clips that same video in about 50 seconds, the Gemini key is included, auto-posting to TikTok, Instagram and YouTube is already wired up, and your clips stay retrievable from any browser.',
+      ' Self-hosted costs you hardware and time: on a typical CPU an 8-minute video takes 5 to 8 minutes to process, and you supply your own Google Gemini key, whose free tier covers 1,500 requests a day. On Clipedit Cloud an NVIDIA GPU clips that same video in about 50 seconds, the Gemini key is included, auto-posting to TikTok, Instagram and YouTube is already wired up, and your clips stay retrievable from any browser.',
   ],
-  ['What is OpenShorts and how does it work?', CANONICAL_ANSWERS.whatIsIt + ' ' + CANONICAL_ANSWERS.howItWorks],
+  ['What is Clipedit and how does it work?', CANONICAL_ANSWERS.whatIsIt + ' ' + CANONICAL_ANSWERS.howItWorks],
   [
-    'How does OpenShorts compare to Opus Clip?',
-    'Both do AI viral moment detection and smart vertical cropping. OpenShorts is MIT-licensed and can be self-hosted, so the source video never leaves your machine, and it adds voice dubbing into 30+ languages (with your own ElevenLabs key) plus an AI UGC generator with lip-synced actors. Opus Clip is closed source and cloud only, starting at $15/month as of October 2026, and it ships a larger caption-style library. Full comparison at /alternatives/opus-clip.',
+    'How does Clipedit compare to Opus Clip?',
+    'Both do AI viral moment detection and smart vertical cropping. Clipedit is MIT-licensed and can be self-hosted, so the source video never leaves your machine, and it adds voice dubbing into 30+ languages (with your own ElevenLabs key) plus an AI UGC generator with lip-synced actors. Opus Clip is closed source and cloud only, starting at $15/month as of October 2026, and it ships a larger caption-style library. Full comparison at /alternatives/opus-clip.',
   ],
   [
     'How does the smart vertical cropping work?',
     'TRACK mode follows a single subject with MediaPipe face detection and a YOLOv8 fallback, damped so the crop holds still inside a safe zone rather than chasing every head movement. GENERAL mode handles group shots and landscapes by preserving the full width over a blurred backdrop. A speaker tracker prevents the crop from flipping between people and holds position through brief occlusions.',
   ],
   [
-    'Can OpenShorts translate and dub videos?',
+    'Can Clipedit translate and dub videos?',
     'Yes, with your own ElevenLabs API key, into more than 30 languages, preserving the original speaker\'s voice characteristics. After dubbing, the audio is re-transcribed so the burned-in subtitles are in the target language rather than the original.',
   ],
   [
@@ -84,8 +84,8 @@ const FAQ = [
     'It generates marketing videos with AI actors for any product or business. You describe the business or paste a website URL, and the AI writes a script, generates a lip-synced actor with voiceover, adds b-roll, subtitles and a hook overlay. Low Cost mode is about $0.65 per video and Premium is about $2.00. It works for restaurants, e-commerce, coaching, local businesses and apps, not only software.',
   ],
   [
-    'Can I automate OpenShorts from Claude, ChatGPT or n8n?',
-    'Yes. OpenShorts has a native MCP server at mcp.openshorts.app/mcp plus a REST API with per-user keys and completion webhooks, so an agent can submit a video URL, wait for processing, list the clips and publish them. The hosted endpoint is always on, with the API key created in your account page; the self-hosted edition serves the same /mcp endpoint while your machine is running. A zero-dependency CLI is on PyPI as openshorts. Full guide at /mcp.',
+    'Can I automate Clipedit from Claude, ChatGPT or n8n?',
+    'Yes. Clipedit has a native MCP server at mcp.openshorts.app/mcp plus a REST API with per-user keys and completion webhooks, so an agent can submit a video URL, wait for processing, list the clips and publish them. The hosted endpoint is always on, with the API key created in your account page; the self-hosted edition serves the same /mcp endpoint while your machine is running. A zero-dependency CLI is on PyPI as openshorts. Full guide at /mcp.',
   ],
   [
     'What are the system requirements to self-host?',
@@ -115,8 +115,8 @@ export const LANDING_FALLBACK = `<div id="seo-content" style="background:oklch(1
 <section style="${S.section}"><div style="${S.wrap}">
   <h2 style="${S.h2}">what it costs</h2>
   <div style="${S.grid};max-width:56rem">
-    ${card('OpenShorts self-hosted &middot; $0', EDITIONS.selfHosted.summary)}
-    ${card('OpenShorts Cloud &middot; free tier, then from $12/month', EDITIONS.cloud.summary)}
+    ${card('Clipedit self-hosted &middot; $0', EDITIONS.selfHosted.summary)}
+    ${card('Clipedit Cloud &middot; free tier, then from $12/month', EDITIONS.cloud.summary)}
   </div>
 </div></section>
 
@@ -134,7 +134,7 @@ export const LANDING_FALLBACK = `<div id="seo-content" style="background:oklch(1
 
 <section style="${S.section}"><div style="${S.wrap}">
   <h2 style="${S.h2}">how it compares</h2>
-  <p style="${S.muted};max-width:48rem">Entry pricing checked 5 October 2026. OpenShorts is $0 self-hosted or $12/month hosted without a watermark, billed monthly. 2short.ai starts at $9.90/month, Submagic at $12, Klap at $14 and Vizard at $14.50 a month on yearly billing, Opus Clip at $15/month and Quso (formerly Vidyo.ai) at $19/month yearly. OpenShorts is the only open source and self-hostable option.</p>
+  <p style="${S.muted};max-width:48rem">Entry pricing checked 5 October 2026. Clipedit is $0 self-hosted or $12/month hosted without a watermark, billed monthly. 2short.ai starts at $9.90/month, Submagic at $12, Klap at $14 and Vizard at $14.50 a month on yearly billing, Opus Clip at $15/month and Quso (formerly Vidyo.ai) at $19/month yearly. Clipedit is the only open source and self-hostable option.</p>
   <p style="${S.muted}">
     <a style="${S.a}" href="/alternatives/opus-clip">Opus Clip alternative</a> &middot;
     <a style="${S.a}" href="/alternatives/klap">Klap alternative</a> &middot;
