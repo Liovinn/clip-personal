@@ -1,4 +1,19 @@
-# Design — OpenShorts
+# Design — Clipedit
+
+## Active fork: Clipedit studio
+
+The clip-generator fork uses a text-only **Clipedit** wordmark, charcoal surfaces,
+lime accents (`#c5f36b`) and Geist for both headings and body. Its app workspace
+uses a left-aligned introduction and a source panel with segmented upload/link
+tabs. Cards use 18px corners; inputs and buttons use 10px corners. UI labels use
+natural casing, while small source labels remain uppercase. There is no brand
+icon in the app or browser tab. `src/clipedit.css`, `tokens.css` and the matching
+Tailwind colors implement this presentation without changing control behavior.
+
+These choices override the upstream theme and typography below, which remain
+as reference for the unmounted marketing sources.
+
+## Upstream design reference
 
 A locked design system for this app (dashboard + landing). Every page redesign
 reads this file before emitting code. Do not regenerate per page — extend or

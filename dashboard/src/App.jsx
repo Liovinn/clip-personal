@@ -1,87 +1,27 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { Upload, Sparkles, Youtube, Instagram, Share2, ChevronDown, Check, Activity, LayoutDashboard, Settings, Plus, History, X, Terminal, Shield, LayoutGrid, Image, Globe, RotateCcw, Calendar, AlertTriangle, KeyRound, Bot, Users, Smartphone, ExternalLink, Copy, CheckCircle2, Mail, Loader2, Download, Menu, Lock, Rocket } from 'lucide-react';
+import { Check, ChevronDown, Activity, LayoutDashboard, Settings, Plus, X, Terminal, Shield, RotateCcw, AlertTriangle, KeyRound, Loader2, Menu, Lock } from 'lucide-react';
 import KeyInput from './components/KeyInput';
 import MediaInput from './components/MediaInput';
-import McpConnectCard from './components/McpConnectCard';
 import ResultCard from './components/ResultCard';
 import JobDownloads from './components/JobDownloads';
 import ProcessingAnimation from './components/ProcessingAnimation';
-// import Gallery from './components/Gallery';
-import ThumbnailStudio from './components/ThumbnailStudio';
-import SaaShortsTab from './components/SaaShortsTab';
-import UGCGallery from './components/UGCGallery';
-import ScheduleWeekModal from './components/ScheduleWeekModal';
 import ClipEditor from './components/ClipEditor';
 import ReframeEditor from './components/ReframeEditor';
 import UsageMeter from './components/UsageMeter';
 import TopUpModal from './components/TopUpModal';
 import WatermarkModal, { watermarkNoticeDismissed } from './components/WatermarkModal';
 import { getApiUrl } from './config';
-import StarBanner from './components/StarBanner';
 import PlanChoiceModal from './components/PlanChoiceModal';
 import ClipTutorial from './components/ClipTutorial';
 import OnboardingSurvey from './components/OnboardingSurvey';
 import TrialUpgradeModal from './components/TrialUpgradeModal';
 import LoginModal from './components/LoginModal';
 import TrialGate from './components/TrialGate';
-import AdvancedBanner from './components/AdvancedBanner';
-import HistoryTab from './components/HistoryTab';
-import AutopilotTab from './components/AutopilotTab';
 import ProfileMenu from './components/ProfileMenu';
 import Modal from './components/ui/Modal';
 import { useAuth } from './contexts/AuthContext';
 import { apiFetch, apiJson, QuotaError, QUOTA_WALL_EVENT } from './lib/api';
 import { track } from './lib/analytics';
-
-// Enhanced "Encryption" using XOR + Base64 with a Salt
-// This is better than plain Base64 but still client-side.
-const SECRET_KEY = import.meta.env.VITE_ENCRYPTION_KEY || "OpenShorts-Static-Salt-Change-Me";
-const ENCRYPTION_PREFIX = "ENC:";
-
-const encrypt = (text) => {
-  if (!text) return '';
-  try {
-    const xor = text.split('').map((c, i) =>
-      String.fromCharCode(c.charCodeAt(0) ^ SECRET_KEY.charCodeAt(i % SECRET_KEY.length))
-    ).join('');
-    return ENCRYPTION_PREFIX + btoa(xor);
-  } catch (e) {
-    console.error("Encryption failed", e);
-    return text;
-  }
-};
-
-const decrypt = (text) => {
-  if (!text) return '';
-  if (text.startsWith(ENCRYPTION_PREFIX)) {
-    try {
-      const raw = text.slice(ENCRYPTION_PREFIX.length);
-      // Check if it's plain base64 or our custom XOR (simple try)
-      const xor = atob(raw);
-      const result = xor.split('').map((c, i) =>
-        String.fromCharCode(c.charCodeAt(0) ^ SECRET_KEY.charCodeAt(i % SECRET_KEY.length))
-      ).join('');
-      return result;
-    } catch (e) {
-      // Fallback if decryption fails (might be old plain text)
-      return '';
-    }
-  }
-  // Backward compatibility: If no prefix, assume old plain text (or return empty if you want to force re-login)
-  // For migration: Return text as is, so it populates the field, and next save will encrypt it.
-  return text;
-};
-
-// Simple TikTok icon sine Lucide might not have it or it varies
-const TikTokIcon = ({ size = 16, className = "" }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
-    <path d="M19.589 6.686a4.793 4.793 0 0 1-3.77-4.245V2h-3.445v13.672a2.896 2.896 0 0 1-5.201 1.743l-.002-.001.002.001a2.895 2.895 0 0 1 3.183-4.51v-3.5a6.329 6.329 0 0 0-5.394 10.692 6.33 6.33 0 0 0 10.857-4.424V8.687a8.182 8.182 0 0 0 4.773 1.526V6.79a4.831 4.831 0 0 1-1.003-.104z" />
-  </svg>
-);
-
-// Cloud accounts get an auto-generated opaque id (os_<hash>) as username —
-// meaningless to the user, so the selector shows connected networks instead.
-const isAutoProfileId = (username) => /^os_[0-9a-f]/i.test(username || "");
 
 /* The job a signed-out visitor started, parked until they come back signed in.
  *
@@ -140,107 +80,6 @@ const formatRetention = (seconds) => {
   return `${Math.max(1, Math.round(seconds / 60))} min`;
 };
 
-const ProfileNetworkIcons = ({ profile, size = 12 }) => (
-  <span className="flex items-center gap-1.5">
-    <span className={profile?.connected?.includes('tiktok') ? 'text-ink' : 'text-muted opacity-40'}>
-      <TikTokIcon size={size} />
-    </span>
-    <span className={profile?.connected?.includes('instagram') ? 'text-ink' : 'text-muted opacity-40'}>
-      <Instagram size={size} />
-    </span>
-    <span className={profile?.connected?.includes('youtube') ? 'text-ink' : 'text-muted opacity-40'}>
-      <Youtube size={size} />
-    </span>
-  </span>
-);
-
-const UserProfileSelector = ({ profiles, selectedUserId, onSelect, onConnect }) => {
-  const [isOpen, setIsOpen] = useState(false);
-
-  if (!profiles || profiles.length === 0) return null;
-
-  const selectedProfile = profiles.find(p => p.username === selectedUserId) || profiles[0];
-  const autoId = isAutoProfileId(selectedProfile?.username);
-
-  return (
-    <div className="relative z-50">
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        aria-label="social profile"
-        /* Phone: avatar + chevron only. A 180px pill next to the menu button,
-           the section title and the minutes meter overflowed a 360px header. */
-        className="flex items-center justify-between gap-1 bg-paper2 border border-rule2 rounded-input px-2 sm:px-3 py-2 text-sm text-ink2 hover:bg-paper3 transition-colors sm:min-w-[180px]"
-      >
-        <span className="flex items-center gap-2">
-          <div className="w-5 h-5 rounded-full bg-paper3 border border-rule flex items-center justify-center font-mono text-micro text-brass shrink-0">
-            {autoId ? "S" : (selectedProfile?.username?.substring(0, 1).toUpperCase() || "U")}
-          </div>
-          {autoId ? (
-            <span className="hidden sm:flex"><ProfileNetworkIcons profile={selectedProfile} size={13} /></span>
-          ) : (
-            <span className="hidden sm:block font-medium text-ink truncate max-w-[100px]">{selectedProfile?.username || "Select User"}</span>
-          )}
-        </span>
-        <ChevronDown size={14} className={`text-muted transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-      </button>
-
-      {isOpen && (
-        <div className="absolute top-full mt-2 right-0 w-64 card overflow-hidden">
-          <div className="max-h-60 overflow-y-auto custom-scrollbar">
-            {profiles.map((profile) => (
-              <button
-                key={profile.username}
-                onClick={() => {
-                  onSelect(profile.username);
-                  setIsOpen(false);
-                }}
-                className="w-full flex items-center justify-between px-4 py-3 hover:bg-paper3 transition-colors text-left group border-b border-rule last:border-0"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-paper3 flex items-center justify-center font-mono text-micro text-ink border border-rule shrink-0">
-                    {isAutoProfileId(profile.username) ? "S" : profile.username.substring(0, 2).toUpperCase()}
-                  </div>
-                  <div className="min-w-0">
-                    <div className="text-sm font-medium text-ink2 group-hover:text-ink transition-colors truncate">
-                      {isAutoProfileId(profile.username)
-                        ? `Social profile ${profiles.indexOf(profile) + 1}`
-                        : profile.username}
-                    </div>
-                    <div className="flex gap-2 mt-0.5">
-                      {/* Status indicators */}
-                      <div className={`flex items-center gap-1 ${profile.connected.includes('tiktok') ? 'text-ink2' : 'text-muted opacity-40'}`}>
-                        <TikTokIcon size={10} />
-                      </div>
-                      <div className={`flex items-center gap-1 ${profile.connected.includes('instagram') ? 'text-ink2' : 'text-muted opacity-40'}`}>
-                        <Instagram size={10} />
-                      </div>
-                      <div className={`flex items-center gap-1 ${profile.connected.includes('youtube') ? 'text-ink2' : 'text-muted opacity-40'}`}>
-                        <Youtube size={10} />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                {selectedUserId === profile.username && <Check size={14} className="text-brass shrink-0" />}
-              </button>
-            ))}
-          </div>
-          {/* For managed users this dropdown otherwise does nothing (one profile,
-              nothing to switch) — its real job is being the door to connecting
-              the greyed-out networks it displays. */}
-          {onConnect && (
-            <button
-              onClick={() => { setIsOpen(false); onConnect(); }}
-              className="w-full flex items-center gap-2 px-4 py-3 text-sm text-brass hover:bg-paper3 transition-colors text-left border-t border-rule"
-            >
-              <Share2 size={14} /> Connect / manage accounts
-            </button>
-          )}
-        </div>
-      )}
-    </div>
-  );
-};
-
 const SESSION_KEY = 'openshorts_session';
 
 // The server's own explanation for a rejected/failed job, readable: FastAPI
@@ -294,35 +133,6 @@ function App() {
   const [durableClips, setDurableClips] = useState({});
 
   const [apiKey, setApiKey] = useState(localStorage.getItem('gemini_key') || '');
-  // Social API State - Load encrypted or plain
-  const [uploadPostKey, setUploadPostKey] = useState(() => {
-    const stored = localStorage.getItem('uploadPostKey_v3');
-    if (stored) return decrypt(stored);
-    return '';
-  });
-  // ElevenLabs API State - Load encrypted
-  const [elevenLabsKey, setElevenLabsKey] = useState(() => {
-    const stored = localStorage.getItem('elevenLabsKey_v1');
-    if (stored) return decrypt(stored);
-    return '';
-  });
-
-  // fal.ai API State - Load encrypted
-  const [falKey, setFalKey] = useState(() => {
-    const stored = localStorage.getItem('falKey_v1');
-    if (stored) return decrypt(stored);
-    return '';
-  });
-
-  const [uploadUserId, setUploadUserId] = useState(() => localStorage.getItem('uploadUserId') || '');
-  const [userProfiles, setUserProfiles] = useState([]); // List of {username, connected: []}
-  // Post-generation social nudge: shown at the results peak until the user
-  // either connects a network or dismisses it. Only 2.7% of cloud users who
-  // reach the social flow ever connect an account — this is the moment (clips
-  // just appeared) with the best odds of moving that number.
-  const [socialNudgeDismissed, setSocialNudgeDismissed] = useState(() => {
-    try { return localStorage.getItem('os_social_nudge_dismissed') === '1'; } catch (_) { return false; }
-  });
   const [showKeyModal, setShowKeyModal] = useState(false);
   const [jobId, setJobId] = useState(null);
   const [status, setStatus] = useState('idle'); // idle, processing, complete, error
@@ -373,14 +183,9 @@ function App() {
   const [noSource, setNoSource] = useState(false);
 
   const [sessionRecovered, setSessionRecovered] = useState(false);
-  const [showScheduleWeek, setShowScheduleWeek] = useState(false);
   // Clip editor overlay: index of the clip being edited, or null.
   const [editingClip, setEditingClip] = useState(null);
   const [reframingClip, setReframingClip] = useState(null);
-
-  // Silent-success "saved" states for the settings key inputs (design.md: no alert popups)
-  const [elevenLabsSaved, setElevenLabsSaved] = useState(false);
-  const [falSaved, setFalSaved] = useState(false);
 
   // Sync state for original video playback
   const [syncedTime, setSyncedTime] = useState(0);
@@ -448,7 +253,7 @@ function App() {
     setShowTopUp(true);
   };
 
-  // Out-of-minutes errors from the thumbnail studio, clip editor and autopilot
+  // Out-of-minutes errors from clip editing
   // (lib/api.openQuotaWall) open the same wall as the main clip flow.
   const meStatus = me?.status;
   useEffect(() => {
@@ -575,23 +380,6 @@ function App() {
     handleClipStateChange(index, { activeLayers: null, serverVideoFile: newFile });
   };
 
-  // Reopen an archived project from the History tab: the backend re-downloads
-  // its files from R2 into the server's working dir and returns the full state.
-  const restoreProject = async (projectJobId) => {
-    const data = await apiJson(`/api/projects/${projectJobId}/restore`, { method: 'POST' });
-    flushClipState();
-    setProjectState(data.project_state || null);
-    setNoSource(true);
-    setJobId(data.job_id);
-    setResults(data.result || null);
-    setLogs(['♻️ Project restored from your library.']);
-    setLogTimes([Date.now() / 1000]);
-    setProcessingMedia(null);
-    setQualityGate(null);
-    setStatus('complete');
-    setActiveTab('dashboard');
-  };
-
   // Apply one subtitle style to every clip of the job, sequentially.
   const handleBulkSubtitles = async (options) => {
     const clips = results?.clips || [];
@@ -663,7 +451,7 @@ function App() {
         else if (!session.noSource) setProcessingMedia({ type: 'server', payload: `/api/source/${session.jobId}` });
         if (session.noSource) setNoSource(true);
         if (session.projectState) setProjectState(session.projectState);
-        if (session.activeTab) setActiveTab(session.activeTab);
+        if (session.activeTab) setActiveTab(session.activeTab === 'settings' ? 'settings' : 'dashboard');
         // If was processing, resume polling; if complete/error, just show results
         setStatus(session.status === 'processing' ? 'processing' : session.status);
         setSessionRecovered(true);
@@ -705,38 +493,8 @@ function App() {
   }, [jobId, status, results, activeTab, noSource, projectState]);
 
   useEffect(() => {
-    // Encrypt Gemini Key too for consistency if desired, but user asked specifically about Social integration not saving well.
-    // For now keeping gemini plain for compatibility unless requested.
     if (apiKey) localStorage.setItem('gemini_key', apiKey);
   }, [apiKey]);
-
-  useEffect(() => {
-    if (uploadPostKey) {
-      localStorage.setItem('uploadPostKey_v3', encrypt(uploadPostKey));
-    }
-    if (uploadUserId) {
-      localStorage.setItem('uploadUserId', uploadUserId);
-    }
-  }, [uploadPostKey, uploadUserId]);
-
-  useEffect(() => {
-    if (elevenLabsKey) {
-      localStorage.setItem('elevenLabsKey_v1', encrypt(elevenLabsKey));
-    }
-  }, [elevenLabsKey]);
-
-  useEffect(() => {
-    if (falKey) {
-      localStorage.setItem('falKey_v1', encrypt(falKey));
-    }
-  }, [falKey]);
-
-  useEffect(() => {
-    if ((uploadPostKey || isManaged) && userProfiles.length === 0) {
-      fetchUserProfiles({ silent: true });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [uploadPostKey, isManaged]);
 
   // For managed users, fetch the durable R2 URLs of the current job's clips. The
   // preview player prefers them (free egress, edge-served, and not competing with
@@ -824,33 +582,7 @@ function App() {
   }, [status, jobId, refreshMe]);
 
 
-  // silent: background auto-fetch — never alert(), just log. Managed users need
-  // no local key (the server resolves its own); BYOK sends the header.
-  const fetchUserProfiles = async ({ silent = false } = {}) => {
-    if (!uploadPostKey && !isManaged) return;
-    try {
-      const res = await apiFetch('/api/social/user', {
-        headers: uploadPostKey ? { 'X-Upload-Post-Key': uploadPostKey } : {}
-      });
-      if (!res.ok) throw new Error("Failed to fetch");
-      const data = await res.json();
-      if (data.profiles && data.profiles.length > 0) {
-        setUserProfiles(data.profiles);
-        // Auto select first if none selected
-        if (!uploadUserId) {
-          setUploadUserId(data.profiles[0].username);
-        }
-      } else if (!silent) {
-        alert("No profiles found for this API Key.");
-      }
-    } catch (e) {
-      if (!silent) alert("Error fetching User Profiles. Please check key.");
-      console.error(e);
-    }
-  };
-
   // Hosted is paid-only (no BYOK core). Self-host requires a moment picker.
-  // Social publishing is optional and never gates clip generation.
   // A self-hosted server running the moment picker on a local LLM
   // (LLM_BASE_URL) does not need a Gemini key for the core pipeline.
   const geminiOk = !!apiKey || !!localLlm;
@@ -914,20 +646,18 @@ function App() {
     if (tutorialLock && activeTab !== 'dashboard') setActiveTab('dashboard');
   }, [tutorialLock, activeTab]);
 
-  // Deep links into a tab: #app?tab=autopilot (Autopilot emails, the social
-  // connect page's return URL). Read once per hash change, then the query is
+  // Only clip generation and settings can be opened by a saved deep link.
+  // Read once per hash change, then the query is
   // dropped so a reload does not keep forcing the tab.
-  const [autopilotConnected, setAutopilotConnected] = useState(false);
   useEffect(() => {
-    const DEEP_LINK_TABS = ['autopilot', 'history', 'settings', 'thumbnails', 'dashboard'];
+    const DEEP_LINK_TABS = ['settings', 'dashboard'];
     const apply = () => {
       const hash = window.location.hash || '';
       if (!hash.startsWith('#app?')) return;
       const params = new URLSearchParams(hash.slice(5));
       const tab = params.get('tab');
-      if (!tab || !DEEP_LINK_TABS.includes(tab)) return;  // e.g. #app?tutorial=1
-      setActiveTab(tab);
-      if (tab === 'autopilot' && params.get('connected') === '1') setAutopilotConnected(true);
+      if (!tab) return;  // e.g. #app?tutorial=1
+      setActiveTab(DEEP_LINK_TABS.includes(tab) ? tab : 'dashboard');
       try { window.history.replaceState(null, '', '#app'); } catch (_) { /* ignore */ }
     };
     apply();
@@ -958,50 +688,7 @@ function App() {
     track('ClipTutorialSkipped', { props: { phase: tutorialPhase } });
     finishTutorial();
   };
-  // Included in the plan (fully managed, no keys): Clip Generator + YouTube Studio.
-  // Advanced (bring your own fal.ai + ElevenLabs keys): AI Shorts + AI Agent.
-  const INCLUDED_TOOL_TABS = ['dashboard', 'thumbnails'];
-  const ADVANCED_TOOL_TABS = ['saasshorts', 'ai-agent'];
-  const TOOL_NAMES = { dashboard: 'the Clip Generator', thumbnails: 'the YouTube Studio' };
-  const gateThisTab = needsPlan && INCLUDED_TOOL_TABS.includes(activeTab);      // included tool, no plan yet
-  const advancedThisTab = billingEnabled && ADVANCED_TOOL_TABS.includes(activeTab); // BYOK-notice tools
-
-  // Social nudge visibility: managed users with clips on screen and no network
-  // connected yet. userProfiles being empty (not yet fetched / none created)
-  // also counts as "not connected" — that is the 97% case.
-  const connectedSocials = ((userProfiles.find((p) => p.username === uploadUserId) || userProfiles[0])?.connected) || [];
-  const showSocialNudge = isManaged && !socialNudgeDismissed && connectedSocials.length === 0 && !tutorialLock;
-
-  // One Seen event per job, only when the banner actually rendered.
-  const socialNudgeSeenRef = useRef(null);
-  useEffect(() => {
-    if (status === 'complete' && (results?.clips?.length > 0) && showSocialNudge && socialNudgeSeenRef.current !== jobId) {
-      socialNudgeSeenRef.current = jobId;
-      track('SocialNudgeSeen', { props: { clips: results.clips.length } });
-    }
-  }, [status, results, showSocialNudge, jobId]);
-
-  // Managed users connect their socials via Upload-Post's branded hosted page.
-  const handleConnectSocials = async () => {
-    try {
-      const { access_url } = await apiJson('/api/social/connect', { method: 'POST' });
-      // Same tab so the connect page's redirectUrl brings the user back into the app.
-      if (access_url) window.location.href = access_url;
-    } catch (e) {
-      alert('Could not open the connection page. Please try again.');
-    }
-  };
-
-  // Open the Upload-Post white-label page (which includes the scheduling calendar)
-  // in a new tab, for consulting/managing scheduled posts from the dashboard.
-  const handleOpenCalendar = async () => {
-    try {
-      const { access_url } = await apiJson('/api/social/connect', { method: 'POST' });
-      if (access_url) window.open(access_url, '_blank', 'noopener');
-    } catch (e) {
-      alert('Could not open the calendar. Please try again.');
-    }
-  };
+  const gateThisTab = needsPlan && activeTab === 'dashboard';
 
   const handleProcess = async (data, forceLowQuality = false) => {
     // Hosted: must be signed in AND on an active plan/trial. Self-host: BYOK keys.
@@ -1192,15 +879,8 @@ function App() {
   // drawer, and the bottom tab bar. `short` is the tab-bar label — the full one
   // wraps to two lines in a 5-up bar on a 360px phone.
   const navItems = [
-    { id: 'dashboard', ord: '01', icon: LayoutDashboard, label: 'Clip Generator', short: 'clips', primary: true },
-    // Cloud only: it runs on the managed pipeline and the Upload-Post connection.
-    ...(billingEnabled ? [{ id: 'autopilot', ord: '02', icon: Rocket, label: 'Autopilot', short: 'autopilot', isNew: true }] : []),
-    { id: 'saasshorts', ord: '03', icon: Sparkles, label: 'AI Shorts', short: 'ai shorts', byok: true, primary: true },
-    { id: 'ai-agent', ord: '04', icon: Bot, label: 'AI Agent', short: 'agent', byok: true },
-    { id: 'ugc-gallery', ord: '05', icon: LayoutGrid, label: 'UGC Gallery', short: 'gallery', primary: true },
-    { id: 'thumbnails', ord: '06', icon: Image, label: 'YouTube Studio', short: 'studio', primary: true },
-    ...(billingEnabled && isSignedIn ? [{ id: 'history', ord: '07', icon: History, label: 'History', short: 'history' }] : []),
-    { id: 'settings', ord: '08', icon: Settings, label: 'Settings', short: 'settings' },
+    { id: 'dashboard', ord: '01', icon: LayoutDashboard, label: 'Clip Generator', short: 'Clips', primary: true },
+    { id: 'settings', ord: '02', icon: Settings, label: 'Settings', short: 'Settings', primary: true },
   ];
   const activeNav = navItems.find((n) => n.id === activeTab);
 
@@ -1220,57 +900,23 @@ function App() {
   };
   const tabLocked = (id) => tutorialLock && id !== 'dashboard';
 
-  // Shared footer links (landing, repo, pricing, contact) — same list in the
-  // desktop rail and the mobile drawer, so they can never drift apart.
   const NavFooterLinks = ({ collapsed = false }) => (
-    <>
-      <a
-        href="#landing"
-        className="flex items-center gap-2 px-3 py-2 text-xs lowercase text-muted hover:text-ink2 transition-colors"
-      >
-        <Globe size={14} className="shrink-0" />
-        <span className={collapsed ? 'hidden lg:block truncate' : 'truncate'}>landing page</span>
-      </a>
-      <a
-        href="https://github.com/mutonby/openshorts"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="flex items-center gap-2 px-3 py-2 text-xs lowercase text-muted hover:text-ink2 transition-colors"
-      >
-        <svg height="14" viewBox="0 0 16 16" version="1.1" width="14" aria-hidden="true" fill="currentColor" className="shrink-0"><path fillRule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg>
-        <span className={collapsed ? 'hidden lg:block truncate' : 'truncate'}>open source</span>
-      </a>
-      {billingEnabled && (
-        <a
-          href="#/pricing"
-          className="flex items-center gap-2 px-3 py-2 text-xs lowercase text-muted hover:text-ink2 transition-colors"
-        >
-          <Sparkles size={14} className="shrink-0" />
-          <span className={collapsed ? 'hidden lg:block truncate' : 'truncate'}>plans &amp; pricing</span>
-        </a>
-      )}
-      <a
-        href="mailto:info@openshorts.app"
-        className="flex items-center gap-2 px-3 py-2 text-xs lowercase text-muted hover:text-ink2 transition-colors"
-      >
-        <Mail size={14} className="shrink-0" />
-        <span className={collapsed ? 'hidden lg:block truncate' : 'truncate'}>info@openshorts.app</span>
-      </a>
-    </>
+    <a href="#legal" className="flex items-center gap-2 px-3 py-2 text-xs lowercase text-muted hover:text-ink2 transition-colors">
+      <Shield size={14} className="shrink-0" />
+      <span className={collapsed ? 'hidden lg:block truncate' : 'truncate'}>Privacy &amp; terms</span>
+    </a>
   );
 
   // Desktop rail: icon-only from md, labelled from lg. Below md it is gone
   // entirely — an unlabelled 80px rail ate a fifth of a phone screen.
   const Sidebar = () => (
-    <div className="hidden md:flex w-20 lg:w-64 bg-paper2 border-r border-rule flex-col h-full shrink-0 transition-all duration-300">
-      <a href="#landing" className="p-6 flex items-center gap-3" title="go to landing page">
-        <div className="w-8 h-8 bg-paper3 rounded-input flex items-center justify-center shrink-0 overflow-hidden border border-rule">
-          <img src="/logo-openshorts.png" alt="Logo" className="w-full h-full object-cover" />
-        </div>
-        <span className="font-display lowercase text-lg text-ink hidden lg:block">openshorts</span>
+    <div className="clipedit-sidebar hidden md:flex w-52 xl:w-60 bg-paper2 border-r border-rule flex-col h-full shrink-0">
+      <a href="#app" onClick={() => goToTab('dashboard')} className="clipedit-brand-link" title="open clip generator">
+        <span className="clipedit-wordmark">Clipedit</span>
       </a>
 
-      <nav className="flex-1 px-4 py-4 space-y-1">
+      <nav className="clipedit-navigation flex-1 px-4 py-4 space-y-2">
+        <p className="clipedit-nav-caption">Workspace</p>
         {navItems.map((item) => {
           const NavIcon = item.icon;
           const isActive = activeTab === item.id;
@@ -1281,18 +927,18 @@ function App() {
               onClick={() => goToTab(item.id)}
               title={tabLocked(item.id) ? 'Finish your first clips to unlock' : item.label}
               disabled={tabLocked(item.id)}
-              className={`relative w-full flex items-center gap-3 px-3 py-2.5 rounded-input transition-colors ${isActive ? 'bg-paper3 text-ink' : 'text-muted hover:text-ink2 hover:bg-paper3/50'} ${tabLocked(item.id) ? 'opacity-40 cursor-not-allowed hover:bg-transparent hover:text-muted' : ''}`}
+              className={`clipedit-nav-item relative w-full flex items-center gap-3 px-3 py-3 rounded-input transition-colors ${isActive ? 'is-active bg-paper3 text-ink' : 'text-muted hover:text-ink2 hover:bg-paper3/50'} ${tabLocked(item.id) ? 'opacity-40 cursor-not-allowed hover:bg-transparent hover:text-muted' : ''}`}
             >
               {isActive && (
                 <span className="absolute left-0 top-1.5 bottom-1.5 w-0.5 bg-brass rounded-full" aria-hidden="true" />
               )}
               <NavIcon size={18} className={`shrink-0 ${isActive ? 'text-brass' : ''}`} />
-              <span className="text-sm lowercase hidden lg:block flex-1 text-left truncate">{item.label}</span>
+              <span className="text-sm flex-1 text-left truncate">{item.label}</span>
               {tabLocked(item.id)
                 ? <Lock size={12} className="shrink-0 hidden lg:block" />
                 : item.byok ? <span className="readout hidden lg:block">BYOK</span>
                   : item.isNew ? <span className="badge-brass hidden lg:block">new</span> : null}
-              <span className="readout hidden lg:block">{item.ord}</span>
+              <span className="readout">{item.ord}</span>
             </button>
           );
         })}
@@ -1319,11 +965,8 @@ function App() {
       />
       <div className="relative w-[17rem] max-w-[82vw] h-full bg-paper2 border-r border-rule flex flex-col animate-slide-in-left">
         <div className="flex items-center justify-between px-5 h-14 border-b border-rule shrink-0">
-          <a href="#landing" className="flex items-center gap-2.5" onClick={() => setNavOpen(false)}>
-            <div className="w-7 h-7 bg-paper3 rounded-input overflow-hidden border border-rule shrink-0">
-              <img src="/logo-openshorts.png" alt="" className="w-full h-full object-cover" />
-            </div>
-            <span className="font-display lowercase text-lg text-ink">openshorts</span>
+          <a href="#app" className="clipedit-wordmark" onClick={() => goToTab('dashboard')}>
+            Clipedit
           </a>
           <button
             onClick={() => setNavOpen(false)}
@@ -1368,12 +1011,11 @@ function App() {
     </div>
   );
 
-  // Bottom tab bar: the four everyday destinations plus "more" for the rest.
+  // Mobile shortcuts for the clip generator and its settings.
   // It is a flex sibling of the scrolling pane rather than `fixed`, so nothing
   // ever hides behind it and no pane needs compensating padding.
   const MobileTabBar = () => {
-    const tabs = navItems.filter((n) => n.primary);
-    const moreActive = !tabs.some((t) => t.id === activeTab);
+    const tabs = navItems;
     return (
       <nav className="md:hidden shrink-0 border-t border-rule bg-paper2/95 backdrop-blur-sm safe-bottom">
         <div className="flex items-stretch">
@@ -1395,15 +1037,6 @@ function App() {
               </button>
             );
           })}
-          <button
-            onClick={() => setNavOpen(true)}
-            aria-label="more sections"
-            aria-expanded={navOpen}
-            className={`flex-1 min-w-0 flex flex-col items-center justify-center gap-1 py-2 min-h-[56px] transition-colors ${moreActive ? 'text-ink' : 'text-muted active:text-ink2'}`}
-          >
-            <Menu size={19} className={moreActive ? 'text-brass' : ''} />
-            <span className="text-[10.5px] lowercase leading-none">more</span>
-          </button>
         </div>
       </nav>
     );
@@ -1413,13 +1046,13 @@ function App() {
     /* h-dvh where supported: on mobile Safari/Chrome `100vh` is the tallest the
        viewport ever gets, so a h-screen shell hides its own bottom bar behind
        the browser chrome until the user scrolls. */
-    <div className="flex h-screen supports-[height:100dvh]:h-[100dvh] bg-paper overflow-hidden">
+    <div className="clipedit-app flex h-screen supports-[height:100dvh]:h-[100dvh] bg-paper overflow-hidden">
       <Sidebar />
       {navOpen && <MobileNavDrawer />}
 
       <main className="flex-1 min-w-0 flex flex-col h-full overflow-hidden relative">
         {/* Top Header */}
-        <header className="h-14 border-b border-rule bg-paper flex items-center justify-between gap-2 px-3 sm:px-6 shrink-0 z-10">
+        <header className="clipedit-topbar h-16 border-b border-rule bg-paper flex items-center justify-between gap-2 px-3 sm:px-7 shrink-0 z-10">
           <div className="flex items-center gap-2 sm:gap-4 min-w-0">
             {/* Mobile: the drawer handle, and the section name the icon rail
                 used to carry. Without it a phone has no "where am I". */}
@@ -1430,8 +1063,10 @@ function App() {
             >
               <Menu size={20} />
             </button>
-            <span data-tutorial="nav-clips" className="md:hidden font-display lowercase text-base text-ink truncate">
-              {activeNav?.label || 'openshorts'}
+            <a href="#app" onClick={() => goToTab('dashboard')} className="clipedit-wordmark md:hidden">Clipedit</a>
+            <span className="hidden md:inline text-xs text-muted">Workspace <span className="mx-3 opacity-40">/</span></span>
+            <span data-tutorial="nav-clips" className="hidden sm:inline text-sm font-medium text-ink truncate">
+              {activeNav?.label || 'Clipedit'}
             </span>
             {status !== 'idle' && (
               <button
@@ -1446,15 +1081,6 @@ function App() {
           </div>
 
           <div className="flex items-center gap-2 sm:gap-4 shrink-0">
-            {userProfiles.length > 0 && (
-              <UserProfileSelector
-                profiles={userProfiles}
-                selectedUserId={uploadUserId}
-                onSelect={setUploadUserId}
-                onConnect={isManaged ? handleConnectSocials : undefined}
-              />
-            )}
-
             {/* Cloud: minutes meter + account/sign-in. For free users the meter
                 opens the upgrade modal — otherwise the only path to a plan is
                 failing against the quota wall. */}
@@ -1536,471 +1162,52 @@ function App() {
         )}
 
         {/* Included tools (Clip Generator, YouTube Studio): non-blocking trial prompt. */}
-        {gateThisTab && <TrialGate toolName={TOOL_NAMES[activeTab] || 'this'} />}
-
-        {/* Advanced tools (AI Shorts, AI Agent): BYOK fal.ai + ElevenLabs notice. */}
-        {advancedThisTab && <AdvancedBanner needsPlan={needsPlan} onKeys={() => goToTab('settings')} />}
+        {gateThisTab && <TrialGate toolName="the Clip Generator" />}
 
         {/* Main Workspace */}
         <div className="flex-1 overflow-hidden relative">
 
-          {/* View: Settings */}
+          {/* Clip generator settings */}
           {activeTab === 'settings' && (
             <div className="h-full overflow-y-auto p-4 sm:p-8 max-w-2xl mx-auto animate-fade">
-              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8">
-                <div>
-                  <p className="eyebrow mb-1.5">08 · SETTINGS</p>
-                  <h1 className="font-display lowercase text-2xl text-ink">Settings</h1>
-                </div>
-                <div className="flex items-center gap-2 text-xs text-muted mt-1">
-                  <Shield size={12} className="text-ok shrink-0" /> Privacy: keys only live in your browser (sent to backend just to process)
-                </div>
+              <div className="mb-8">
+                <p className="eyebrow mb-1.5">02 · SETTINGS</p>
+                <h1 className="font-display lowercase text-2xl text-ink">Clip generator settings</h1>
+                <p className="text-sm text-muted mt-3">Generate clips from a video URL or an uploaded file.</p>
               </div>
-              {/* Self-hosted installs have no account page, so the agent
-                  how-to lives here; cloud users get it (with OAuth) in Account. */}
-              {!billingEnabled && <div className="mb-6"><McpConnectCard cloud={false} /></div>}
-              {isManaged ? (
-                <div className="card p-6 mb-2">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-input bg-paper3 flex items-center justify-center shrink-0">
-                        <Shield size={16} className="text-brass" />
-                      </div>
-                      <h2 className="text-base font-medium text-ink lowercase">Included in your plan</h2>
-                    </div>
-                    <span className="badge-ok">Managed</span>
-                  </div>
-                  <p className="text-xs text-muted mb-5 leading-relaxed">
-                    Your plan includes the <strong>Clip Generator</strong> and <strong>YouTube Studio</strong>,
-                    fully managed — no API keys required. AI Shorts &amp; dubbing use your own fal.ai / ElevenLabs
-                    keys (below). Connect your social accounts to publish directly.
+              {billingEnabled ? (
+                <div className="card p-6">
+                  <h2 className="text-base font-medium text-ink lowercase">Clip generation</h2>
+                  <p className="text-sm text-muted mt-3">
+                    {isManaged ? 'Your account includes clip generation. No API key is required.' : 'Sign in and choose a plan to generate clips.'}
                   </p>
-                  <div className="flex flex-wrap gap-2">
-                    <button onClick={handleConnectSocials} className="btn-primary py-2 px-4 text-sm">
-                      <Share2 size={16} /> Connect social accounts
-                    </button>
-                    <button onClick={handleOpenCalendar} className="btn-quiet py-2 px-4 text-sm">
-                      <Calendar size={16} /> Content calendar
-                    </button>
-                  </div>
-                </div>
-              ) : billingEnabled ? (
-                <div className="card p-6 mb-2">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-input bg-paper3 flex items-center justify-center shrink-0">
-                        <Sparkles size={16} className="text-brass" />
-                      </div>
-                      <h2 className="text-base font-medium text-ink lowercase">Choose your plan</h2>
-                    </div>
-                    <span className="badge-ok">Free plan available</span>
-                  </div>
-                  <p className="text-xs text-muted mb-5 leading-relaxed">
-                    Generate shorts with zero setup — no API keys needed. Start free with 20 min/month, or go paid from $12/mo. Cancel anytime.
-                  </p>
-                  <button onClick={() => setShowPlanChoice(true)} className="btn-primary py-2 px-4 text-sm">
-                    <Sparkles size={16} /> Choose a plan
-                  </button>
                 </div>
               ) : (
-                <>
-              <KeyInput onKeySet={setApiKey} savedKey={apiKey} />
-
-              <div className="card p-4 sm:p-6 mt-8">
-                <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-input bg-paper3 flex items-center justify-center shrink-0">
-                      <Share2 size={16} className="text-brass" />
-                    </div>
-                    <h2 className="text-base font-medium text-ink lowercase">Social Integration</h2>
-                  </div>
-                  <span className="readout">Optional</span>
-                </div>
-                <p className="text-xs text-muted mb-6 leading-relaxed">
-                  Only needed to publish directly to TikTok, Instagram Reels, and YouTube Shorts via <strong>Upload-Post</strong>.
-                  You can generate and download clips without a social account or Upload-Post API key.
-                  Includes a <strong>free tier</strong> (no credit card required).
-                </p>
-                <div className="space-y-4">
-                  <label className="block text-sm text-muted">Upload-Post API Key</label>
-                  <div className="flex flex-col sm:flex-row gap-2">
-                    <input
-                      type="password"
-                      value={uploadPostKey}
-                      onChange={(e) => setUploadPostKey(e.target.value)}
-                      className="input-field"
-                      placeholder="ey..."
-                    />
-                    <button onClick={fetchUserProfiles} className="btn-quiet py-2 px-4 text-sm">
-                      Connect
-                    </button>
-                  </div>
-                  <div className="text-xs text-muted leading-relaxed">
-                    Connect your Upload-Post account to enable one-click publishing.
-                    <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2">
-                      <a href="https://app.upload-post.com/login" target="_blank" rel="noopener noreferrer" className="p-2 border border-rule rounded-input hover:bg-paper3 transition-colors flex flex-col gap-1">
-                        <span className="text-ink2 font-medium">1. Login</span>
-                        <span className="text-xs text-muted">Register account</span>
-                      </a>
-                      <a href="https://app.upload-post.com/manage-users" target="_blank" rel="noopener noreferrer" className="p-2 border border-rule rounded-input hover:bg-paper3 transition-colors flex flex-col gap-1">
-                        <span className="text-ink2 font-medium">2. Profiles</span>
-                        <span className="text-xs text-muted">Create & Connect</span>
-                      </a>
-                      <a href="https://app.upload-post.com/api-keys" target="_blank" rel="noopener noreferrer" className="p-2 border border-rule rounded-input hover:bg-paper3 transition-colors flex flex-col gap-1">
-                        <span className="text-ink2 font-medium">3. API Key</span>
-                        <span className="text-xs text-muted">Generate key</span>
-                      </a>
-                    </div>
-                    <br />
-                    <span className="text-muted">
-                      Keys are only stored in your browser. They are sent to the backend only to process your request, never stored server-side.
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-                </>
+                <KeyInput onKeySet={setApiKey} savedKey={apiKey} />
               )}
-
-              <div className="card p-4 sm:p-6 mt-8">
-                <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-input bg-paper3 flex items-center justify-center shrink-0">
-                      <Globe size={16} className="text-brass" />
-                    </div>
-                    <h2 className="text-base font-medium text-ink lowercase">Video Translation</h2>
-                  </div>
-                  <span className="readout">BYOK</span>
-                </div>
-                <p className="text-xs text-muted mb-6 leading-relaxed">
-                  For <strong>AI Shorts &amp; dubbing</strong> — bring your own key. Translate your clips to different
-                  languages using <strong>ElevenLabs</strong> AI dubbing (billed by ElevenLabs). Not covered by your plan.
-                </p>
-                <div className="space-y-4">
-                  <label className="block text-sm text-muted">ElevenLabs API Key</label>
-                  <div className="flex flex-col sm:flex-row gap-2">
-                    <input
-                      type="password"
-                      value={elevenLabsKey}
-                      onChange={(e) => setElevenLabsKey(e.target.value)}
-                      className="input-field"
-                      placeholder="sk_..."
-                    />
-                    <button
-                      onClick={() => {
-                        if (elevenLabsKey) {
-                          localStorage.setItem('elevenLabsKey_v1', encrypt(elevenLabsKey));
-                          setElevenLabsSaved(true);
-                          setTimeout(() => setElevenLabsSaved(false), 2000);
-                        }
-                      }}
-                      className={elevenLabsSaved ? 'badge-ok px-4' : 'btn-quiet py-2 px-4 text-sm'}
-                    >
-                      {elevenLabsSaved ? <><Check size={12} /> saved</> : 'Save'}
-                    </button>
-                  </div>
-                  <div className="text-xs text-muted leading-relaxed">
-                    Get your API key from ElevenLabs to enable video translation.
-                    <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      <a href="https://elevenlabs.io/sign-up" target="_blank" rel="noopener noreferrer" className="p-2 border border-rule rounded-input hover:bg-paper3 transition-colors flex flex-col gap-1">
-                        <span className="text-ink2 font-medium">1. Sign Up</span>
-                        <span className="text-xs text-muted">Create account</span>
-                      </a>
-                      <a href="https://elevenlabs.io/app/settings/api-keys" target="_blank" rel="noopener noreferrer" className="p-2 border border-rule rounded-input hover:bg-paper3 transition-colors flex flex-col gap-1">
-                        <span className="text-ink2 font-medium">2. API Key</span>
-                        <span className="text-xs text-muted">Generate key</span>
-                      </a>
-                    </div>
-                    <br />
-                    <span className="text-muted">
-                      Keys are only stored in your browser. They are sent to the backend only to process your request, never stored server-side.
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="card p-4 sm:p-6 mt-8">
-                <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-input bg-paper3 flex items-center justify-center shrink-0">
-                      <Sparkles size={16} className="text-brass" />
-                    </div>
-                    <h2 className="text-base font-medium text-ink lowercase">AI Shorts (UGC Videos)</h2>
-                  </div>
-                  <span className="readout">BYOK</span>
-                </div>
-                <p className="text-xs text-muted mb-6 leading-relaxed">
-                  Generate UGC-style videos with AI actors for any product or business using <strong>fal.ai</strong>.
-                  <strong> Not covered by your plan</strong> — bring your own fal.ai + ElevenLabs keys (billed by those
-                  providers, ~$0.65-2 per video). Your plan still covers the AI script &amp; orchestration.
-                </p>
-                <div className="space-y-4">
-                  <label className="block text-sm text-muted">fal.ai API Key</label>
-                  <div className="flex flex-col sm:flex-row gap-2">
-                    <input
-                      type="password"
-                      value={falKey}
-                      onChange={(e) => setFalKey(e.target.value)}
-                      className="input-field"
-                      placeholder="fal_..."
-                    />
-                    <button
-                      onClick={() => {
-                        if (falKey) {
-                          localStorage.setItem('falKey_v1', encrypt(falKey));
-                          setFalSaved(true);
-                          setTimeout(() => setFalSaved(false), 2000);
-                        }
-                      }}
-                      className={falSaved ? 'badge-ok px-4' : 'btn-quiet py-2 px-4 text-sm'}
-                    >
-                      {falSaved ? <><Check size={12} /> saved</> : 'Save'}
-                    </button>
-                  </div>
-                  <div className="text-xs text-muted leading-relaxed">
-                    Get your API key from fal.ai to enable AI actor video generation.
-                    <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      <a href="https://fal.ai/dashboard/keys" target="_blank" rel="noopener noreferrer" className="p-2 border border-rule rounded-input hover:bg-paper3 transition-colors flex flex-col gap-1">
-                        <span className="text-ink2 font-medium">1. Sign Up</span>
-                        <span className="text-xs text-muted">Create fal.ai account</span>
-                      </a>
-                      <a href="https://fal.ai/dashboard/keys" target="_blank" rel="noopener noreferrer" className="p-2 border border-rule rounded-input hover:bg-paper3 transition-colors flex flex-col gap-1">
-                        <span className="text-ink2 font-medium">2. API Key</span>
-                        <span className="text-xs text-muted">Generate key</span>
-                      </a>
-                    </div>
-                    <br />
-                    <span className="text-muted">
-                      Keys are only stored in your browser. Sent to backend only to process requests.
-                    </span>
-                  </div>
-                </div>
-              </div>
             </div>
           )}
-
-          {/* View: SaaS Shorts */}
-          {activeTab === 'saasshorts' && (
-            <SaaShortsTab geminiApiKey={apiKey} elevenLabsKey={elevenLabsKey} falKey={falKey} uploadPostKey={uploadPostKey} uploadUserId={uploadUserId} managed={isManaged} />
-          )}
-
-          {/* View: AI Agent */}
-          {activeTab === 'ai-agent' && (
-            <div className="h-full overflow-y-auto custom-scrollbar p-4 sm:p-6 md:p-10 animate-fade">
-              <div className="max-w-4xl mx-auto space-y-8">
-
-                {/* Header */}
-                <div className="space-y-3">
-                  <p className="eyebrow flex items-center gap-2">
-                    <Bot size={12} /> 03 · AI AGENT · AUTONOMOUS SKILL
-                  </p>
-                  <h1 className="font-display lowercase text-3xl md:text-4xl text-ink">
-                    Your Personal Clipping Team
-                  </h1>
-                  <p className="text-muted text-base md:text-lg leading-relaxed max-w-2xl">
-                    Drop your videos in a folder and a team of AI clippers picks the viral moments, edits them, and queues them for your approval — like having a 24/7 short-form editing crew on autopilot.
-                  </p>
-                </div>
-
-                {/* Mobile-format warning */}
-                <div className="px-4 py-3 rounded-card border border-rule bg-paper2 flex items-start gap-3">
-                  <Smartphone size={18} className="text-warn shrink-0 mt-0.5" />
-                  <div className="text-sm text-ink2">
-                    <p className="font-medium text-ink mb-1">Upload videos already in vertical (9:16) mobile format.</p>
-                    <p className="text-muted leading-relaxed">
-                      The agent does not reframe horizontal footage. Make sure every source video is shot or pre-cropped to mobile/portrait format before dropping it into the input folder.
-                    </p>
-                  </div>
-                </div>
-
-                {/* Workflow */}
-                <div className="grid md:grid-cols-3 gap-4">
-                  <div className="card p-5 space-y-2">
-                    <div className="w-10 h-10 rounded-input bg-paper3 flex items-center justify-center">
-                      <Upload size={18} className="text-brass" />
-                    </div>
-                    <h3 className="font-medium text-ink lowercase">1. Drop your videos</h3>
-                    <p className="text-xs text-muted leading-relaxed">
-                      Put your long-form vertical footage in the watched folder. The skill picks one video per run.
-                    </p>
-                  </div>
-
-                  <div className="card p-5 space-y-2">
-                    <div className="w-10 h-10 rounded-input bg-paper3 flex items-center justify-center">
-                      <Users size={18} className="text-brass" />
-                    </div>
-                    <h3 className="font-medium text-ink lowercase">2. AI clippers work</h3>
-                    <p className="text-xs text-muted leading-relaxed">
-                      Whisper transcribes, Gemini 3 Flash spots viral beats, FFmpeg cuts each clip and adds a hook overlay.
-                    </p>
-                  </div>
-
-                  <div className="card p-5 space-y-2">
-                    <div className="w-10 h-10 rounded-input bg-paper3 flex items-center justify-center">
-                      <CheckCircle2 size={18} className="text-brass" />
-                    </div>
-                    <h3 className="font-medium text-ink lowercase">3. You validate, it ships</h3>
-                    <p className="text-xs text-muted leading-relaxed">
-                      Approve the candidates you like and the skill auto-publishes them to TikTok, Reels and YouTube Shorts via Upload-Post.
-                    </p>
-                  </div>
-                </div>
-
-                {/* Repo CTA */}
-                <div className="card p-6 md:p-8 space-y-5">
-                  <div className="flex items-start justify-between gap-4 flex-wrap">
-                    <div>
-                      <h2 className="font-display lowercase text-xl text-ink mb-1">skill-autoshorts</h2>
-                      <p className="text-sm text-muted">
-                        The Claude Code skill that powers this workflow. Install it once and trigger it whenever you want a fresh batch of clips.
-                      </p>
-                    </div>
-                    <a
-                      href="https://github.com/mutonby/skill-autoshorts"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="btn-primary py-2 px-4 text-sm shrink-0"
-                    >
-                      View on GitHub <ExternalLink size={14} />
-                    </a>
-                  </div>
-
-                  <div className="bg-paper border border-rule rounded-card p-4 font-mono text-xs text-ink2 flex items-center justify-between gap-3">
-                    <span className="truncate">git clone https://github.com/mutonby/skill-autoshorts</span>
-                    <button
-                      onClick={() => navigator.clipboard.writeText('git clone https://github.com/mutonby/skill-autoshorts')}
-                      className="text-muted hover:text-ink transition-colors shrink-0"
-                      title="Copy"
-                    >
-                      <Copy size={14} />
-                    </button>
-                  </div>
-
-                  <div className="grid sm:grid-cols-2 gap-3 text-sm">
-                    <div className="flex items-start gap-2 text-ink2">
-                      <Check size={16} className="text-brass shrink-0 mt-0.5" />
-                      <span>Daily batch — picks one long video per run</span>
-                    </div>
-                    <div className="flex items-start gap-2 text-ink2">
-                      <Check size={16} className="text-brass shrink-0 mt-0.5" />
-                      <span>Whisper transcription with word-level timing</span>
-                    </div>
-                    <div className="flex items-start gap-2 text-ink2">
-                      <Check size={16} className="text-brass shrink-0 mt-0.5" />
-                      <span>Gemini 3 Flash multimodal moment detection</span>
-                    </div>
-                    <div className="flex items-start gap-2 text-ink2">
-                      <Check size={16} className="text-brass shrink-0 mt-0.5" />
-                      <span>Auto-publish to TikTok, Reels & YouTube Shorts</span>
-                    </div>
-                  </div>
-                </div>
-
-              </div>
-            </div>
-          )}
-
-          {/* View: UGC Gallery */}
-          {activeTab === 'ugc-gallery' && (
-            <div className="h-full overflow-y-auto custom-scrollbar animate-fade">
-              <div className="max-w-6xl mx-auto p-4 sm:p-6 md:p-8">
-                <UGCGallery />
-              </div>
-            </div>
-          )}
-
-          {/* View: Autopilot */}
-          {activeTab === 'autopilot' && (
-            <div className="h-full overflow-y-auto custom-scrollbar animate-fade">
-              <div className="max-w-6xl mx-auto p-4 sm:p-6 md:p-8">
-                {isSignedIn ? (
-                  <AutopilotTab
-                    onOpenProject={restoreProject}
-                    onUpgrade={() => (isManaged ? openUpsell({ source: 'autopilot' }) : setShowPlanChoice(true))}
-                    justConnected={autopilotConnected}
-                  />
-                ) : (
-                  <div className="max-w-2xl mx-auto card p-8 text-center">
-                    <Rocket size={28} className="mx-auto mb-4 text-brass" />
-                    <h1 className="font-display lowercase text-2xl text-ink mb-2">your channel, clipped on its own</h1>
-                    <p className="text-muted text-sm mb-6">
-                      Connect your YouTube channel and every new video turns into shorts automatically.
-                      Sign in to set it up.
-                    </p>
-                    <button onClick={() => setShowLogin(true)} className="btn-primary">sign in</button>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* View: History */}
-          {activeTab === 'history' && (
-            <div className="h-full overflow-y-auto custom-scrollbar animate-fade">
-              <div className="max-w-6xl mx-auto p-4 sm:p-6 md:p-8">
-                <HistoryTab onReopenProject={restoreProject} />
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'thumbnails' && (
-            <ThumbnailStudio
-              geminiApiKey={apiKey}
-              uploadPostKey={uploadPostKey}
-              uploadUserId={uploadUserId}
-              managed={isManaged}
-              onCreateClips={(sessionId) => {
-                setActiveTab('dashboard');
-                // Reuse the Studio source for clip generation.
-                handleProcess({ type: 'thumbnail_session', payload: sessionId });
-              }}
-            />
-          )}
-
-          {/* View: Gallery */}
-          {/* {activeTab === 'gallery' && (
-            <Gallery />
-          )} */}
 
           {/* View: Dashboard (Idle) */}
           {activeTab === 'dashboard' && status === 'idle' && (
-            <div className="h-full overflow-y-auto custom-scrollbar animate-fade">
-              <div className="min-h-full flex flex-col items-center justify-center px-4 py-5 sm:p-6">
+            <div className="clipedit-start h-full overflow-y-auto custom-scrollbar animate-fade">
+              <div className="clipedit-start-inner min-h-full flex flex-col items-center px-4 py-7 sm:px-8 sm:py-10">
               {/* On a phone the hero used to fill the fold on its own and push
                   the uploader — the whole point of the screen — below it. The
                   eyebrow, the display size and the gaps all shrink first. */}
-              <div className="max-w-xl w-full text-center space-y-5 sm:space-y-8">
-                <div className="space-y-2.5 sm:space-y-4">
-                  <p className="eyebrow hidden sm:block">01 · CLIP GENERATOR</p>
-                  <h1 className="font-display lowercase text-3xl sm:text-4xl md:text-5xl text-ink">
-                    Create Viral Shorts
+              <div className="clipedit-workspace w-full max-w-3xl space-y-6 sm:space-y-8">
+                <div className="clipedit-hero space-y-3">
+                  <p className="clipedit-kicker"><span aria-hidden="true" /> AI CLIP GENERATOR</p>
+                  <h1 className="clipedit-headline text-ink">
+                    Long video.<br /><span>Short-form ready.</span>
                   </h1>
-                  <p className="text-muted text-[15px] sm:text-lg leading-snug sm:leading-normal max-w-sm sm:max-w-none mx-auto">
-                    Drop your long-form video below to instantly generate viral clips with AI.
+                  <p className="clipedit-description text-muted">
+                    Bring your video. Find the best moments. Create clips worth sharing.
                   </p>
-                  {/* The same pipeline is an MCP server: point people at the
-                      one place that explains how to drive it from an agent. */}
-                  {!tutorialLock && (
-                  <p className="text-xs text-muted">
-                    Or let an agent do it:{' '}
-                    <a
-                      href={billingEnabled ? '#/account' : '#app'}
-                      onClick={(e) => { if (!billingEnabled) { e.preventDefault(); goToTab('settings'); } }}
-                      className="text-ink2 underline underline-offset-2 hover:text-brass transition-colors"
-                    >
-                      connect Claude, ChatGPT or n8n →
-                    </a>
-                  </p>
-                  )}
                 </div>
 
                 <MediaInput onProcess={handleProcess} isProcessing={status === 'processing'} />
 
-                <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-8 text-muted text-xs sm:text-sm">
-                  <span className="flex items-center gap-2"><Youtube size={16} /> YouTube</span>
-                  <span className="flex items-center gap-2"><Instagram size={16} /> Instagram</span>
-                  <span className="flex items-center gap-2"><TikTokIcon size={16} /> TikTok</span>
-                </div>
               </div>
               </div>
             </div>
@@ -2081,14 +1288,6 @@ function App() {
                   </div>
                 )}
 
-                {/* The render is dead time: the user is watching a progress bar
-                    with nothing to do, so this is where the one star ask goes. */}
-                {status === 'processing' && (
-                  <div className="my-3">
-                    <StarBanner message="Got a minute while this renders?" />
-                  </div>
-                )}
-
                 {/* Logs Terminal */}
                 <div className={`bg-paper rounded-card border border-rule overflow-hidden flex flex-col transition-all duration-500 ${status === 'complete' ? `min-h-0 opacity-50 hover:opacity-100 ${logsVisible ? 'h-32' : 'h-auto'}` : `flex-1 ${logsVisible ? 'min-h-[160px] sm:min-h-[200px]' : 'min-h-0 flex-none'}`}`}>
                   <button
@@ -2127,9 +1326,7 @@ function App() {
 
               {/* Right Panel: Results Grid */}
               <div className={`${status === 'complete' ? 'w-full md:w-[70%] lg:w-[75%]' : 'w-full md:w-[45%] lg:w-[40%]'} md:h-full flex flex-col shrink-0 md:shrink card p-3.5 sm:p-6 transition-all duration-700 ease-in-out`}>
-                {/* Title + counters on one row, the two actions on their own row
-                    below. Wrapping them all together dropped a lone half-width
-                    "schedule week" pill under the title on a phone. */}
+                {/* Keep clip counters and download controls on separate rows. */}
                 <div className="mb-4 sm:mb-6 shrink-0 space-y-3">
                   <h2 className="font-display lowercase text-lg sm:text-xl text-ink flex flex-wrap items-center gap-2">
                     <span className="mr-auto">Generated Shorts</span>
@@ -2147,15 +1344,6 @@ function App() {
                   {results?.clips?.length > 0 && status === 'complete' && (
                     <div className="flex flex-col sm:flex-row sm:justify-end items-stretch sm:items-center gap-2">
                       <JobDownloads key={jobId} jobId={jobId} allowDrive={!billingEnabled} />
-                      {results.clips.length > 1 && (
-                        <button
-                          onClick={() => setShowScheduleWeek(true)}
-                          className="btn-primary px-4 py-2 text-xs"
-                        >
-                          <Calendar size={14} />
-                          schedule week
-                        </button>
-                      )}
                     </div>
                   )}
                 </div>
@@ -2195,49 +1383,6 @@ function App() {
                         <span className="text-brass font-medium">Remove the watermark →</span>
                       </button>
                     )}
-                    {/* Distribution nudge at the same peak: clips on screen,
-                        publishing them is one connect away. Hidden once any
-                        network is linked or the user dismisses it. */}
-                    {showSocialNudge && (
-                      <div className="w-full flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 px-3 py-2.5 rounded-input bg-paper3 border border-rule text-sm">
-                        <div className="flex items-start gap-3 flex-1 min-w-0">
-                          <div className="min-w-0 leading-relaxed">
-                            <span className="text-ink">Publish these clips straight from here.</span>{' '}
-                            <span className="text-muted">Connect your YouTube, TikTok or Instagram once — after that every clip is one click from posted.</span>
-                          </div>
-                          {/* On a phone the dismiss X rides the copy, so the CTA
-                              below can run the full width of the card. */}
-                          <button
-                            onClick={() => {
-                              track('SocialNudgeDismissed');
-                              setSocialNudgeDismissed(true);
-                              try { localStorage.setItem('os_social_nudge_dismissed', '1'); } catch (_) { /* ignore */ }
-                            }}
-                            aria-label="dismiss"
-                            className="sm:hidden shrink-0 -m-1 p-1 text-muted hover:text-ink"
-                          >
-                            <X size={16} />
-                          </button>
-                        </div>
-                        <button
-                          onClick={() => { track('SocialNudgeConnect'); handleConnectSocials(); }}
-                          className="btn-quiet shrink-0 text-xs py-1.5 px-3 lowercase w-full sm:w-auto"
-                        >
-                          connect socials →
-                        </button>
-                        <button
-                          onClick={() => {
-                            track('SocialNudgeDismissed');
-                            setSocialNudgeDismissed(true);
-                            try { localStorage.setItem('os_social_nudge_dismissed', '1'); } catch (_) { /* ignore */ }
-                          }}
-                          aria-label="dismiss"
-                          className="hidden sm:block shrink-0 p-1 text-muted hover:text-ink"
-                        >
-                          <X size={14} />
-                        </button>
-                      </div>
-                    )}
                     {/* Self-host only: cloud archives clips to the video library,
                         here they really are gone once the retention sweep runs. */}
                     {!billingEnabled && jobRetentionSeconds > 0 && (
@@ -2264,13 +1409,8 @@ function App() {
                           initialState={projectState?.clips?.find((c) => c.index === i) || null}
                           onStateChange={handleClipStateChange}
                           durable={durableClips[i]}
-                          uploadPostKey={uploadPostKey}
-                          uploadUserId={uploadUserId}
                           geminiApiKey={apiKey}
-                          elevenLabsKey={elevenLabsKey}
                           isManaged={isManaged}
-                          connectedPlatforms={(userProfiles.find((p) => p.username === uploadUserId) || userProfiles[0])?.connected ?? null}
-                          onConnectSocials={isManaged ? handleConnectSocials : null}
                           onPlay={(time) => handleClipPlay(time)}
                           onPause={handleClipPause}
                           onBulkSubtitle={handleBulkSubtitles}
@@ -2366,16 +1506,6 @@ function App() {
 
         </div>
       </Modal>
-
-      <ScheduleWeekModal
-        isOpen={showScheduleWeek}
-        onClose={() => setShowScheduleWeek(false)}
-        clips={results?.clips || []}
-        jobId={jobId}
-        uploadPostKey={uploadPostKey}
-        uploadUserId={uploadUserId}
-        isManaged={isManaged}
-      />
 
       {/* Pre-flight quality gate */}
       {qualityGate && (

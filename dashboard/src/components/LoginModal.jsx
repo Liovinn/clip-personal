@@ -38,7 +38,7 @@ export default function LoginModal({ onClose, queued = false }) {
   };
 
   return (
-    <Modal isOpen onClose={onClose} eyebrow="ACCOUNT" title="Sign in to OpenShorts" size="md">
+    <Modal isOpen onClose={onClose} eyebrow="ACCOUNT" title="Sign in to Clipedit" size="md">
       <p className="text-muted text-sm mb-6 lowercase">Access your plan and generate shorts with no API keys.</p>
 
       {queued && (

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link2, Upload, FileVideo, X, Info, Loader2, ChevronDown } from 'lucide-react';
+import { Link2, Upload, FileVideo, X, Info, Loader2, ChevronDown, ArrowRight } from 'lucide-react';
 import { track } from '../lib/analytics';
 import { getApiUrl } from '../config';
 
@@ -143,11 +143,16 @@ export default function MediaInput({ onProcess, isProcessing }) {
     };
 
     return (
-        <div className="card p-4 sm:p-6 animate-fade">
-            <div className="flex gap-4 sm:gap-6 mb-6 border-b border-rule" data-tutorial="source-tabs">
+        <div className="clipedit-input-panel card p-4 sm:p-7 animate-fade">
+            <div className="clipedit-panel-heading">
+                <div><p className="clipedit-step-label">01 / SOURCE</p><h2>Add your video</h2></div>
+                <span className="clipedit-panel-hint">Your next great clip starts here</span>
+            </div>
+            <div className="clipedit-source-tabs flex gap-2 mb-6" data-tutorial="source-tabs">
                 <button
                     onClick={() => setMode('file')}
-                    className={`flex items-center gap-2 pb-3 px-1 -mb-px border-b-2 text-sm lowercase whitespace-nowrap transition-colors ${mode === 'file'
+                    aria-pressed={mode === 'file'}
+                    className={`clipedit-source-tab flex items-center gap-2 text-sm whitespace-nowrap transition-colors ${mode === 'file'
                         ? 'text-ink border-brass'
                         : 'text-muted border-transparent hover:text-ink2'
                         }`}
@@ -158,7 +163,8 @@ export default function MediaInput({ onProcess, isProcessing }) {
                 {youtubeUrlEnabled && (
                     <button
                         onClick={() => setMode('url')}
-                        className={`flex items-center gap-2 pb-3 px-1 -mb-px border-b-2 text-sm lowercase whitespace-nowrap transition-colors ${mode === 'url'
+                        aria-pressed={mode === 'url'}
+                        className={`clipedit-source-tab flex items-center gap-2 text-sm whitespace-nowrap transition-colors ${mode === 'url'
                             ? 'text-ink border-brass'
                             : 'text-muted border-transparent hover:text-ink2'
                             }`}
@@ -211,7 +217,7 @@ export default function MediaInput({ onProcess, isProcessing }) {
                 ) : (
                     <div
                         data-tutorial="drop-zone"
-                        className={`border-2 border-dashed rounded-card p-6 sm:p-8 text-center transition-colors ${file ? 'border-brass' : 'border-rule2 hover:border-brass'
+                        className={`clipedit-upload-area border-2 border-dashed rounded-card p-6 sm:p-8 text-center transition-colors ${file ? 'border-brass' : 'border-rule2 hover:border-brass'
                             }`}
                         onDragOver={(e) => e.preventDefault()}
                         onDrop={handleDrop}
@@ -266,8 +272,8 @@ export default function MediaInput({ onProcess, isProcessing }) {
                                     key={f.value}
                                     type="button"
                                     onClick={() => setOutputFormat(f.value)}
-                                    className={`py-3 px-2 rounded-input border flex flex-col items-center gap-2 transition-colors
-                                        ${active ? 'border-[color:var(--color-accent)] text-ink' : 'border-rule2 text-muted hover:border-[color:var(--color-accent)]'}`}
+                                    className={`clipedit-format-option py-3 px-2 rounded-input border flex flex-col items-center gap-2 transition-colors
+                                        ${active ? 'is-selected border-[color:var(--color-accent)] text-ink' : 'border-rule2 text-muted hover:border-[color:var(--color-accent)]'}`}
                                 >
                                     {/* Aspect-ratio glyph */}
                                     <span
@@ -392,7 +398,7 @@ export default function MediaInput({ onProcess, isProcessing }) {
                     type="submit"
                     data-tutorial="generate"
                     disabled={isProcessing || (mode === 'url' && !url) || (mode === 'file' && (!file || fileTooShort))}
-                    className="w-full btn-primary mt-4"
+                    className="clipedit-generate w-full btn-primary mt-5"
                 >
                     {isProcessing ? (
                         <>
@@ -401,7 +407,7 @@ export default function MediaInput({ onProcess, isProcessing }) {
                         </>
                     ) : (
                         <>
-                            Generate Clips
+                            Generate Clips <ArrowRight size={17} />
                         </>
                     )}
                 </button>

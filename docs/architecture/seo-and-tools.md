@@ -1,5 +1,9 @@
 # SEO surface, free tools and attribution
 
+This document describes the upstream marketing implementation. This fork's
+frontend opens the clip generator directly and does not run the SEO plugin or
+build standalone tool pages. See [Clip generator interface](clip-generator-ui.md).
+
 ## Crawler-visible SPA (`dashboard/vite-plugin-seo.js`)
 
 The dashboard is a client-rendered SPA with hash routing, so the HTML served for

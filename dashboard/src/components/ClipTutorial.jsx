@@ -6,7 +6,7 @@ const TOUR = [
   {
     target: '[data-tutorial="nav-clips"]',
     title: 'Clip Generator',
-    body: 'This is the tool people come for. A long video in, vertical shorts out. The other menu items stay locked until you finish one run.',
+    body: 'Turn a long video into short clips. Upload a file or paste a video link to get started.',
   },
   {
     target: '[data-tutorial="source-tabs"]',
@@ -149,7 +149,7 @@ export default function ClipTutorial({ phase, jobStatus, errorText, onStart, onS
         <p className="eyebrow mb-2">First clips</p>
         <p className={`text-sm leading-relaxed ${jobStatus === 'error' ? 'text-danger' : 'text-muted'}`}>
           {jobStatus === 'error'
-            ? `${errorText ? `That video could not be clipped: ${errorText}` : 'That run failed.'} Try another video. Other tools unlock once one job finishes.`
+            ? `${errorText ? `That video could not be clipped: ${errorText}` : 'That run failed.'} Try another video.`
             : 'Hang on — Clip Generator is finding the moments and cutting vertical shorts.'}
         </p>
       </div>
@@ -241,7 +241,7 @@ export default function ClipTutorial({ phase, jobStatus, errorText, onStart, onS
             That is the whole product, on one video.
           </p>
           <p className="text-sm text-muted leading-relaxed mb-6">
-            The other tools are unlocked. Come back to Clip Generator whenever you have another long video.
+              Preview your clips, adjust captions or framing, and download the ones you want to keep.
           </p>
           <button type="button" onClick={onDismissCelebrate} className="btn-primary w-full">
             <Sparkles size={16} /> See my clips
