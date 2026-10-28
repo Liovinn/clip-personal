@@ -146,7 +146,7 @@ export default function MediaInput({ onProcess, isProcessing }) {
         <div className="clipedit-input-panel card p-4 sm:p-7 animate-fade">
             <div className="clipedit-panel-heading">
                 <div><p className="clipedit-step-label">01 / SOURCE</p><h2>Add your video</h2></div>
-                <span className="clipedit-panel-hint">Your next great clip starts here</span>
+                <span className="clipedit-panel-hint">URL or file upload</span>
             </div>
             <div className="clipedit-source-tabs flex gap-2 mb-6" data-tutorial="source-tabs">
                 <button

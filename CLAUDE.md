@@ -38,7 +38,7 @@ Ingest (yt-dlp or upload) → transcription (word timestamps) → scene detectio
 ## Subsystem reference (read before touching)
 
 - SEO pages, free tools, attribution → `docs/architecture/seo-and-tools.md`
-- This fork's full Clipedit frontend → `docs/architecture/clip-generator-ui.md`
+- This fork's focused Clipedit frontend → `docs/architecture/clip-generator-ui.md`
 - Layout picker, reframing modes, hook grounding → `docs/architecture/layouts-and-reframing.md`
 - Clip count, silent-footage fallback, local LLM → `docs/architecture/clip-selection.md`
 - Thumbnail Studio → `docs/architecture/thumbnails.md`

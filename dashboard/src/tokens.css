@@ -2,14 +2,14 @@
 
 :root {
   /* paper */
-  --color-paper: #101214;
-  --color-paper-2: #171a1e;
-  --color-paper-3: #23272d;
+  --color-paper: #0b1018;
+  --color-paper-2: #121b29;
+  --color-paper-3: #1c293c;
 
   /* ink */
-  --color-ink: #f5f6f7;
-  --color-ink-2: #d6dade;
-  --color-muted: #939ba5;
+  --color-ink: #f2f6ff;
+  --color-ink-2: #cad6e7;
+  --color-muted: #8f9fb6;
 
   /* rules */
   --color-rule: rgb(255 255 255 / 0.08);
@@ -17,12 +17,12 @@
   --rule-blueprint: oklch(96% 0.006 262 / 0.04);
 
   /* accents */
-  --color-accent: #c5f36b;
-  --color-accent-ink: #17220b;
+  --color-accent: #8ab4ff;
+  --color-accent-ink: #0d1d38;
   --color-accent-2: oklch(68% 0.16 18);
-  --color-glow: rgb(197 243 107 / 0.16);
+  --color-glow: rgb(138 180 255 / 0.16);
   --color-paper-emit: transparent;
-  --color-focus: #c5f36b;
+  --color-focus: #8ab4ff;
 
   /* states */
   --color-ok: oklch(75% 0.11 150);

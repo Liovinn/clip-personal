@@ -2,16 +2,16 @@
 
 ## Active fork: Clipedit studio
 
-The full dashboard uses a text-only **Clipedit** wordmark, charcoal surfaces,
-lime accents (`#c5f36b`) and Geist for both headings and body. Its app workspace
-uses a left-aligned introduction and a source panel with segmented upload/link
-tabs. Cards use 18px corners; inputs and buttons use 10px corners. UI labels use
-natural casing, while small source labels remain uppercase. There is no brand
-icon in the app or browser tab. `src/clipedit.css`, `tokens.css` and the matching
-Tailwind colors implement this presentation without changing control behavior.
+The focused app uses a text-only **Clipedit** wordmark, navy/slate surfaces,
+blue accents (`#8ab4ff`) and Geist typography. A compact top bar contains only
+Clip generator and Settings. The desktop workspace places an introduction on
+the left and the video input panel on the right; phones use one column.
+Settings contains only the Gemini connection. There are no promotional footer
+links or agent connectors. The app and browser tab use no brand icon.
+`src/clipedit.css`, `tokens.css` and matching Tailwind colors define the theme.
 
-These choices override the upstream theme and typography below. All original
-tool screens remain available with their existing account and provider rules.
+These choices override the upstream theme and typography below. Video
+processing, model configuration and clip-generation request behavior are unchanged.
 
 ## Upstream design reference
 

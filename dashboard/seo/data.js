@@ -11,6 +11,15 @@
  *      misquoted fact about this product.
  */
 
+// Features advertised by the clip-only fork's managed pricing screen.
+// Plan amounts and quotas continue to come from the billing API.
+export const CLIP_GENERATOR_FEATURES = [
+  'Generate short clips from video URLs or uploaded files.',
+  'AI highlight selection and GPU rendering.',
+  'Edit clip timing, captions, hooks and framing.',
+  'Preview and download the generated clips.',
+]
+
 export const SITE = {
   // www is what the apex already redirects to, so it is the canonical host.
   url: 'https://www.openshorts.app',

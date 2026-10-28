@@ -3,10 +3,7 @@ import { Loader2, CreditCard, LogOut, Plus } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { apiJson } from '../lib/api';
 import { track } from '../lib/analytics';
-import ApiKeysCard from './ApiKeysCard';
-import McpConnectCard from './McpConnectCard';
 import DeleteAccountCard from './DeleteAccountCard';
-import SocialAnalyticsCard from './SocialAnalyticsCard';
 import InvoicesCard from './InvoicesCard';
 import CancelPlanModal from './CancelPlanModal';
 
@@ -61,15 +58,6 @@ export default function AccountPage() {
             });
             try { localStorage.removeItem('os_pending_checkout'); } catch (_) { /* ignore */ }
           }
-        }
-        // First time a plan activates, take the user straight to connect their
-        // socials. Guard with a flag so top-up checkouts don't re-trigger it.
-        if (paidPlan && !localStorage.getItem('os_socials_prompted')) {
-          localStorage.setItem('os_socials_prompted', '1');
-          try {
-            const { access_url } = await apiJson('/api/social/connect', { method: 'POST' });
-            if (access_url) { window.location.href = access_url; return; }
-          } catch (_) { /* fall through to the account page */ }
         }
         window.location.hash = '#/account';
       }
@@ -232,8 +220,6 @@ export default function AccountPage() {
       {/* Only accounts that ever had a Stripe relationship can have invoices. */}
       {me.has_billing_account && <InvoicesCard />}
 
-      <SocialAnalyticsCard />
-
       {topups.length > 0 && (
         <div className="card p-6">
           <h3 className="font-display lowercase text-lg text-ink mb-1 flex items-center gap-2"><Plus size={16} className="text-brass" /> Buy more minutes</h3>
@@ -251,10 +237,6 @@ export default function AccountPage() {
           </div>
         </div>
       )}
-
-      <McpConnectCard cloud />
-
-      <ApiKeysCard />
 
       <DeleteAccountCard />
     </div>
