@@ -8,6 +8,8 @@ The copy uses clear, professional Indonesian and familiar product terms.
 Clip count, duration, layout and auto-title settings are always visible on
 the creation page; there is no advanced-options disclosure. Empty fields keep
 the existing AI defaults. The output-format label is simply "Format".
+The source tabs show Link video first (selected by default), then Upload file.
+If the backend disables video URLs, the existing fallback selects file upload.
 
 The intended deployment is a VPS/domain frontend and API with RunPod Serverless
 GPU workers. This is a deployment direction, not an implemented worker or queue;

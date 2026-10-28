@@ -31,8 +31,8 @@ const readVideoDuration = (file) => new Promise((resolve) => {
 
 export default function MediaInput({ onProcess, isProcessing }) {
     const [youtubeUrlEnabled, setYoutubeUrlEnabled] = useState(true);
-    // File upload is the primary path; the link is secondary.
-    const [mode, setMode] = useState('file'); // 'file' | 'url'
+    // Start with the link input; upload remains available beside it.
+    const [mode, setMode] = useState('url'); // 'file' | 'url'
     const [url, setUrl] = useState('');
     const [file, setFile] = useState(null);
     const [fileSeconds, setFileSeconds] = useState(null);
@@ -147,17 +147,6 @@ export default function MediaInput({ onProcess, isProcessing }) {
                 <h2>Video</h2>
             </div>
             <div className="clipedit-source-tabs flex gap-2 mb-6" data-tutorial="source-tabs">
-                <button
-                    onClick={() => setMode('file')}
-                    aria-pressed={mode === 'file'}
-                    className={`clipedit-source-tab flex items-center gap-2 text-sm whitespace-nowrap transition-colors ${mode === 'file'
-                        ? 'text-ink border-brass'
-                        : 'text-muted border-transparent hover:text-ink2'
-                        }`}
-                >
-                    <Upload size={16} className={`hidden sm:block ${mode === 'file' ? 'text-brass' : ''}`} />
-                    Upload file
-                </button>
                 {youtubeUrlEnabled && (
                     <button
                         onClick={() => setMode('url')}
@@ -171,6 +160,17 @@ export default function MediaInput({ onProcess, isProcessing }) {
                         Link video
                     </button>
                 )}
+                <button
+                    onClick={() => setMode('file')}
+                    aria-pressed={mode === 'file'}
+                    className={`clipedit-source-tab flex items-center gap-2 text-sm whitespace-nowrap transition-colors ${mode === 'file'
+                        ? 'text-ink border-brass'
+                        : 'text-muted border-transparent hover:text-ink2'
+                        }`}
+                >
+                    <Upload size={16} className={`hidden sm:block ${mode === 'file' ? 'text-brass' : ''}`} />
+                    Upload file
+                </button>
             </div>
 
             <form onSubmit={handleSubmit}>
