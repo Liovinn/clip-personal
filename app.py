@@ -780,19 +780,27 @@ def _strip_watermark_copy(output_dir, filename):
     return filename
 
 
-def _strip_burned_captions(output_dir, filename):
+def _strip_burned_captions(output_dir, filename, materialize=True):
     """Walk ``subtitled_<ts>_`` prefixes back to the file without burned captions.
 
     Returns the name unchanged when there is nothing to strip (or when the
     underlying file is gone, e.g. a library restore that only kept the current
-    version).
+    version). A lazy hooked-only file is encoded on demand when requested.
+    Call from a worker thread when materialize=True because it can encode.
     """
+    import hooks
     filename = _strip_watermark_copy(output_dir, filename)
     while True:
         m = re.match(r'^subtitled_\d+_(.+)$', filename)
-        if not m or not os.path.exists(os.path.join(output_dir, m.group(1))):
+        if not m:
             return filename
-        filename = m.group(1)
+        under = m.group(1)
+        if not os.path.exists(os.path.join(output_dir, under)):
+            if not hooks.has_recipe(output_dir, under):
+                return filename
+            if materialize and not hooks.materialize(output_dir, under):
+                return filename
+        filename = under
 
 
 def _strip_burned_hook(output_dir, filename):
@@ -2638,11 +2646,20 @@ def _lower_priority():
         os.nice(n)
 
 
+def _job_encode_env(env):
+    """Cap job NVENC sessions across processes sharing the output directory."""
+    env = dict(env)
+    slots = os.environ.get("JOB_NVENC_SLOTS", "4").strip()
+    env["NVENC_SLOTS"] = slots if slots.isdigit() else "4"
+    env["NVENC_LOCK_DIR"] = os.path.abspath(OUTPUT_DIR)
+    return env
+
+
 async def run_job(job_id, job_data):
     """Executes the subprocess for a specific job."""
 
     cmd = job_data['cmd']
-    env = job_data['env']
+    env = _job_encode_env(job_data['env'])
     output_dir = job_data['output_dir']
     
     jobs[job_id]['status'] = 'processing'
@@ -4056,7 +4073,8 @@ async def edit_clip(
         # Edit the clip WITHOUT its burned captions, then put them back on top —
         # otherwise the captions are baked into the edit and the next subtitle
         # pass stacks a second layer over them (see _reapply_captions).
-        clean_name = _strip_burned_captions(os.path.join(OUTPUT_DIR, req.job_id), filename)
+        clean_name = await asyncio.to_thread(
+            _strip_burned_captions, os.path.join(OUTPUT_DIR, req.job_id), filename)
         had_captions = clean_name != filename
         if had_captions:
             filename = clean_name
@@ -5213,7 +5231,7 @@ async def add_subtitles(req: SubtitleRequest, request: Request):
              filename = f"{base_name}_clip_{req.clip_index+1}.mp4"
 
     # Re-subtitling must replace previous subtitles instead of burning over them.
-    filename = _strip_burned_captions(output_dir, filename)
+    filename = await asyncio.to_thread(_strip_burned_captions, output_dir, filename)
 
     input_path = os.path.join(output_dir, filename)
     if not os.path.exists(input_path):
@@ -5393,7 +5411,7 @@ async def remove_subtitles(req: RemoveSubtitlesRequest, request: Request):
            f"_clip_{req.clip_index + 1}.mp4")
 
     # Same walk-back the burn path uses, so this undoes any number of restyles.
-    filename = _strip_burned_captions(output_dir, filename)
+    filename = await asyncio.to_thread(_strip_burned_captions, output_dir, filename)
 
     if not os.path.exists(os.path.join(output_dir, filename)):
         raise HTTPException(status_code=404,
@@ -5476,7 +5494,7 @@ async def add_hook(req: HookRequest, request: Request):
     # second caption layer (see _reapply_captions). The hook layer is stripped
     # too: a new hook REPLACES the burned one (auto-hook or a previous manual
     # one) instead of stacking on top of it.
-    clean_name = _strip_burned_captions(output_dir, filename)
+    clean_name = _strip_burned_captions(output_dir, filename, materialize=False)
     had_captions = clean_name != filename
     clean_name = _strip_burned_hook(output_dir, clean_name)
     filename = clean_name

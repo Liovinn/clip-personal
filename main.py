@@ -826,6 +826,13 @@ def _content_block(error_text):
 
 
 def download_youtube_video(url, output_dir=".", on_audio=None):
+    """Fetch public video sources with redirect/DNS checks at connection time."""
+    import ssrf_guard
+    with ssrf_guard.guarded():
+        return _download_youtube_video(url, output_dir, on_audio=on_audio)
+
+
+def _download_youtube_video(url, output_dir=".", on_audio=None):
     """
     Downloads a YouTube video using yt-dlp.
     Returns the path to the downloaded video and the video title.
@@ -986,7 +993,8 @@ def download_youtube_video(url, output_dir=".", on_audio=None):
                 'outtmpl': os.path.join(output_dir, '.early_audio.%(ext)s'),
                 'overwrites': True,
             }
-            with yt_dlp.YoutubeDL(opts) as ydl:
+            import ssrf_guard
+            with ssrf_guard.guarded(), yt_dlp.YoutubeDL(opts) as ydl:
                 res = ydl.process_ie_result(copy.deepcopy(info), download=True)
             path = ((res.get('requested_downloads') or [{}])[0].get('filepath')
                     or res.get('filepath'))
@@ -1005,6 +1013,9 @@ def download_youtube_video(url, output_dir=".", on_audio=None):
         # clients, API JSON, m3u8), 4-9 s of round trips per attempt.
         with yt_dlp.YoutubeDL(_base_opts(extractor_args, proxy, cookies)) as ydl:
             info = ydl.extract_info(url, download=False, process=False)
+        if not str(info.get('extractor_key') or info.get('ie_key') or '').lower().startswith('youtube'):
+            import ssrf_guard
+            ssrf_guard.assert_public_urls(info)
         sanitized = sanitize_filename(info.get('title', 'youtube_video'))
         # Only when the whole source is far bigger than what was paid for: a
         # ranged fetch goes through ffmpeg at ~1-2.5x realtime, while a native

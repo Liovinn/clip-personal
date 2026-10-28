@@ -23,6 +23,7 @@ import tempfile
 
 import active_speaker
 import gpu_decode
+import gpu_render
 import camera_inset
 import punch_in
 import screencast_layout
@@ -563,6 +564,62 @@ def screen_ranges(input_video, scenes, fps, strategies):
     return ranges
 
 
+def encode_scenes(input_video, specs, orig_w, orig_h, out_w, out_h, fps,
+                  workdir, logo, final_output_video):
+    """Encode the scene specs into ``final_output_video`` with the clip's audio.
+
+    The whole clip in one pass on the card when it can (gpu_render);
+    otherwise one ffmpeg per scene and a concat, as always."""
+    if logo:
+        import main as m
+
+    video_in = None
+    if gpu_render.usable(input_video):
+        gpu_out = os.path.join(workdir, "gpu.mp4")
+        mark = None
+        if logo:
+            mark = {"path": logo,
+                    "x": int(out_w * m.WATERMARK_MARGIN_RATIO),
+                    "y": int(out_h * m.WATERMARK_Y_RATIO),
+                    "w": max(80, int(out_w * m.WATERMARK_WIDTH_RATIO)),
+                    "opacity": m.WATERMARK_OPACITY}
+        if gpu_render.render(input_video, specs, orig_w, orig_h, out_w, out_h,
+                             fps, gpu_out, overlay=mark):
+            video_in = ["-i", gpu_out]
+
+    if video_in is None:
+        segments = []
+        for idx, (ss, dur, graph, _boxes) in enumerate(specs):
+            seg_path = os.path.join(workdir, f"seg_{idx:03d}.mp4")
+            extra, out_label = [], "[v]"
+            if logo:
+                extra = ["-i", logo]
+                graph += ";" + m.watermark_filter(out_w, out_h, video="[v]", out="[vw]")
+                out_label = "[vw]"
+            _run_segment(input_video, ss, dur, extra, graph, out_label, seg_path)
+            segments.append(seg_path)
+
+        list_path = os.path.join(workdir, "concat.txt")
+        with open(list_path, "w") as f:
+            f.write(concat_list_content(segments))
+        video_in = ["-f", "concat", "-safe", "0", "-i", list_path]
+
+    # Video (stream copy) + audio straight from the clip.
+    _run([
+        "ffmpeg", "-y", "-loglevel", "error",
+        *video_in,
+        "-i", input_video,
+        "-map", "0:v:0", "-map", "1:a:0?",
+        "-c:v", "copy", "-c:a", "copy", *METADATA_SCRUB,
+        # +faststart moves the moov atom to the front so the browser <video>
+        # can start playing before the whole file downloads. Without it the
+        # in-app preview spins forever (download still works) — the moov
+        # lands at the end of a plain concat.
+        "-movflags", "+faststart",
+        final_output_video,
+    ])
+
+
 def render(input_video, final_output_video, aspect_ratio, content_ranges=None,
            force_strategy=None, crop_overrides=None, watermark=False):
     """Full v2 reframe of one clip. Raises on failure (caller falls back).
@@ -711,7 +768,7 @@ def render(input_video, final_output_video, aspect_ratio, content_ranges=None,
             strategies[scene_idx] = plan
             splits.pop(start_f, None)
             if plan == 'SCREENCAST':
-                screencasts[start_f] = centre
+                screencasts[start_f] = centre  # (face centre, content columns)
             elif plan == 'INSET':
                 insets[start_f] = box
                 inset_count += 1
@@ -778,19 +835,22 @@ def render(input_video, final_output_video, aspect_ratio, content_ranges=None,
         logo = None
 
     workdir = tempfile.mkdtemp(prefix="reframe_v2_")
-    segments = []
     try:
+        # One spec per scene: (ss, dur, graph, crop boxes). TRACK scenes carry
+        # their per-frame crop boxes for the GPU render and a sendcmd file for
+        # the ffmpeg one; every other layout is its filtergraph.
+        specs = []
         for idx, (start_f, end_f, strategy) in enumerate(ranges):
-            seg_path = os.path.join(workdir, f"seg_{idx:03d}.mp4")
             ss = start_f / fps
             dur = (end_f - start_f) / fps
+            boxes = None
 
             if strategy == 'INSET':
                 graph = camera_inset.inset_filtergraph(
                     orig_w, orig_h, out_w, out_h, insets.get(start_f, inset))
             elif strategy == 'SCREENCAST':
                 graph = screencast_layout.screencast_filtergraph(
-                    orig_w, orig_h, out_w, out_h, screencasts[start_f])
+                    orig_w, orig_h, out_w, out_h, *screencasts[start_f])
             elif strategy == 'WIDE' and start_f in focus_crops:
                 graph = screencast_layout.focus_filtergraph(
                     orig_w, orig_h, out_w, out_h, focus_crops[start_f])
@@ -825,6 +885,7 @@ def render(input_video, final_output_video, aspect_ratio, content_ranges=None,
                     # instead of trimming both ends.
                     crop_y = max(0, (orig_h - crop_h) // 2)
                     init = f"w={crop_w}:h={crop_h}:x={seg_xs[0]}:y={crop_y}"
+                    boxes = [(crop_w, crop_h, x, crop_y) for x in seg_xs]
                 with open(cmd_path, "w") as f:
                     f.write("\n".join(lines) + "\n")
                 graph = (
@@ -832,33 +893,10 @@ def render(input_video, final_output_video, aspect_ratio, content_ranges=None,
                     f"crop@c={init},"
                     f"scale={out_w}:{out_h},setsar=1[v]"
                 )
+            specs.append((ss, dur, graph, boxes))
 
-            extra, out_label = [], "[v]"
-            if logo:
-                extra = ["-i", logo]
-                graph += ";" + m.watermark_filter(out_w, out_h, video="[v]", out="[vw]")
-                out_label = "[vw]"
-            _run_segment(input_video, ss, dur, extra, graph, out_label, seg_path)
-            segments.append(seg_path)
-
-        list_path = os.path.join(workdir, "concat.txt")
-        with open(list_path, "w") as f:
-            f.write(concat_list_content(segments))
-
-        # Concat video segments (stream copy) + audio straight from the clip.
-        _run([
-            "ffmpeg", "-y", "-loglevel", "error",
-            "-f", "concat", "-safe", "0", "-i", list_path,
-            "-i", input_video,
-            "-map", "0:v:0", "-map", "1:a:0?",
-            "-c:v", "copy", "-c:a", "copy", *METADATA_SCRUB,
-            # +faststart moves the moov atom to the front so the browser <video>
-            # can start playing before the whole file downloads. Without it the
-            # in-app preview spins forever (download still works) — the moov
-            # lands at the end of a plain concat.
-            "-movflags", "+faststart",
-            final_output_video,
-        ])
+        encode_scenes(input_video, specs, orig_w, orig_h, out_w, out_h, fps,
+                      workdir, logo, final_output_video)
     finally:
         import shutil
         shutil.rmtree(workdir, ignore_errors=True)

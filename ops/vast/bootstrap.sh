@@ -85,6 +85,9 @@ if [[ ! -f .cache/vast/installed || $(cat .cache/vast/installed) != "$fingerprin
 fi
 
 # Exercise CUDA kernels and NVENC, rather than only detecting a GPU by name.
+if [[ ${GPU_RENDER:-0} == 1 ]]; then
+  bash ops/vast/build-gpu-renderer.sh
+fi
 bash ops/vast/run-service.sh check
 
 for service in backend frontend renderer; do

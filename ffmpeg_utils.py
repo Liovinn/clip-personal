@@ -163,8 +163,10 @@ def _probe_nvenc():
         "-c:v", "h264_nvenc", "-f", "null", "-",
     ]
     try:
+        # Hardware detection must not queue behind job encode slots.
         result = subprocess.run(
-            cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=30
+            cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=30,
+            env={**os.environ, "NVENC_SLOTS": "0"},
         )
         return result.returncode == 0
     except Exception:
@@ -210,7 +212,16 @@ def video_encode_args(tier=QUALITY):
 
     if use_nvenc and tier == INTERMEDIATE:
         return _intermediate_nvenc_args()
-    return list((_NVENC_ARGS if use_nvenc else _X264_ARGS)[tier])
+    return _nvenc_encode_args(tier) if use_nvenc else list(_X264_ARGS[tier])
+
+
+def _nvenc_encode_args(tier):
+    """Preserve quality defaults; allow the faster upstream preset explicitly."""
+    args = list(_NVENC_ARGS[tier])
+    preset = os.environ.get("FFMPEG_NVENC_PRESET", "").strip().lower()
+    if preset in {f"p{i}" for i in range(1, 8)}:
+        args[args.index("-preset") + 1] = preset
+    return args
 
 
 def _intermediate_nvenc_args():

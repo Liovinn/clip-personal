@@ -1,5 +1,7 @@
+import json
 import os
 import re
+import shutil
 import textwrap
 import subprocess
 import urllib.request
@@ -483,9 +485,11 @@ def add_hook_to_video(video_path, text, output_path, position="top", font_scale=
     font_scale: float multiplier (1.0 = default)
     style: hook look (see HOOK_STYLES)
     also: optional (vf, path): ALSO write ``path`` = the hooked picture with
-      ``vf`` applied (the captions), from the same decode. The job pipeline
-      needs both files (the editor re-captions from the hooked one), and one
-      ffmpeg with two outputs saves a full decode + pass per clip.
+      ``vf`` applied (the captions), from the same decode. The editor
+      re-captions from the hooked-only picture, but most clips are never
+      re-captioned, so with ``also`` that file is not encoded: a recipe
+      (overlay image + position) is kept instead and ``materialize`` encodes
+      it the first time it is asked for (``HOOK_LAZY=0``: encode it here).
     mark: optional (logo_path, make_filter, path), only with ``also``: ALSO
       write ``path`` = the captioned picture with the free-plan mark, from the
       same decode (the served ``wm_`` copy, see main.mark_delivery).
@@ -548,61 +552,65 @@ def add_hook_to_video(video_path, text, output_path, position="top", font_scale=
         # 4. FFmpeg Command
         print(f"🎬 Overlaying hook: '{text}' at {overlay_x},{overlay_y}")
         
-        overlay = (f"[0:v][1:v]overlay={overlay_x}:{overlay_y}"
-                   + (f":enable='between(t,0,{float(duration)})'" if duration else ""))
-        tail = ['-c:a', 'copy', *video_encode_args(QUALITY), *METADATA_SCRUB,
-                '-movflags', '+faststart']
+        overlay = _overlay_graph(overlay_x, overlay_y, duration)
+        tail = _encode_tail()
+        lazy = also is not None and LAZY
+        hooked_out = [] if lazy else ['-map', '[h]', '-map', '0:a?', *tail, output_path]
         if also and mark:
             extra_vf, extra_path = also
             logo_path, make_filter, mark_path = mark
             marked = make_filter(video_width, video_height, video="[sm]",
                                  logo="[2:v]", out="[m]")
+            graph = (f"{overlay},{extra_vf},split=2[s][sm];{marked}" if lazy else
+                     f"{overlay},split=2[h][c];[c]{extra_vf},split=2[s][sm];{marked}")
             ffmpeg_cmd = [
                 'ffmpeg', '-y',
                 '-i', video_path,
                 '-i', img_path,
                 '-i', logo_path,
-                '-filter_complex',
-                f"{overlay},split=2[h][c];[c]{extra_vf},split=2[s][sm];{marked}",
-                '-map', '[h]', '-map', '0:a?', *tail, output_path,
+                '-filter_complex', graph,
+                *hooked_out,
                 '-map', '[s]', '-map', '0:a?', *tail, extra_path,
                 '-map', '[m]', '-map', '0:a?', *tail, mark_path,
             ]
         elif also:
             extra_vf, extra_path = also
+            graph = (f"{overlay},{extra_vf}[s]" if lazy else
+                     f"{overlay},split=2[h][c];[c]{extra_vf}[s]")
             ffmpeg_cmd = [
                 'ffmpeg', '-y',
                 '-i', video_path,
                 '-i', img_path,
-                '-filter_complex', f"{overlay},split=2[h][c];[c]{extra_vf}[s]",
-                '-map', '[h]', '-map', '0:a?', *tail, output_path,
+                '-filter_complex', graph,
+                *hooked_out,
                 '-map', '[s]', '-map', '0:a?', *tail, extra_path,
             ]
         else:
-            ffmpeg_cmd = [
-                'ffmpeg', '-y',
-                '-i', video_path,
-                '-i', img_path,
-                '-filter_complex', overlay,
-                *tail,
-                output_path
-            ]
-        
-        outputs = [output_path]
+            ffmpeg_cmd = _overlay_cmd(video_path, img_path, overlay, output_path)
+
+        outputs = [] if lazy else [output_path]
         if also:
             outputs.append(also[1])
             if mark:
                 outputs.append(mark[2])
-        result = gpu_decode.run(
-            lambda on_gpu: gpu_decode.on_card(ffmpeg_cmd, video_path) if on_gpu else ffmpeg_cmd,
-            lambda cmd: subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                                       timeout=1800),
-            ok=lambda r: r.returncode == 0 or finished_before_crash(r, outputs),
-            path=video_path)
+        result = _run_encode(ffmpeg_cmd, video_path, outputs)
         if result.returncode != 0 and not finished_before_crash(result, outputs):
             raise subprocess.CalledProcessError(result.returncode, ffmpeg_cmd,
                                                 result.stdout, result.stderr)
-        print(f"✅ Hook added to {output_path}")
+        if lazy:
+            try:
+                _write_recipe(output_path, video_path, img_path, overlay_x, overlay_y, duration)
+                print(f"✅ Hook added to {also[1]} ({os.path.basename(output_path)} on demand)")
+            except Exception as e:
+                # No recipe, no on-demand file: encode the hooked picture now.
+                print(f"⚠️ Hook recipe not kept ({e}); encoding {output_path} now")
+                cmd = _overlay_cmd(video_path, img_path, overlay, output_path)
+                done = _run_encode(cmd, video_path, [output_path])
+                if done.returncode != 0 and not finished_before_crash(done, [output_path]):
+                    raise subprocess.CalledProcessError(done.returncode, cmd,
+                                                        done.stdout, done.stderr)
+        else:
+            print(f"✅ Hook added to {output_path}")
         if placed:
             return {"position": "auto", "y": placed["y"], "scale": placed["scale"],
                     "height": round(box_h / video_height, 3)}
@@ -621,3 +629,87 @@ def add_hook_to_video(video_path, text, output_path, position="top", font_scale=
         # Cleanup temp image
         if os.path.exists(hook_filename):
             os.remove(hook_filename)
+
+
+# --- the hooked-only picture, encoded on demand -------------------------------
+
+LAZY = os.environ.get("HOOK_LAZY", "1").strip() != "0"
+RECIPE_PREFIX = ".hookrecipe_"
+
+
+def _overlay_graph(x, y, duration):
+    return (f"[0:v][1:v]overlay={x}:{y}"
+            + (f":enable='between(t,0,{float(duration)})'" if duration else ""))
+
+
+def _encode_tail():
+    return ['-c:a', 'copy', *video_encode_args(QUALITY), *METADATA_SCRUB,
+            '-movflags', '+faststart']
+
+
+def _overlay_cmd(video_path, img_path, overlay, output_path):
+    return ['ffmpeg', '-y', '-i', video_path, '-i', img_path,
+            '-filter_complex', overlay, *_encode_tail(), output_path]
+
+
+def _run_encode(cmd, video_path, outputs):
+    return gpu_decode.run(
+        lambda on_gpu: gpu_decode.on_card(cmd, video_path) if on_gpu else cmd,
+        lambda c: subprocess.run(c, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                 timeout=1800),
+        ok=lambda r: r.returncode == 0 or finished_before_crash(r, outputs),
+        path=video_path)
+
+
+def recipe_paths(output_dir, hooked_name):
+    """(json, png) holding how to encode ``hooked_name``, next to the clip."""
+    base = os.path.join(output_dir, f"{RECIPE_PREFIX}{hooked_name}")
+    return base + ".json", base + ".png"
+
+
+def has_recipe(output_dir, hooked_name):
+    return os.path.exists(recipe_paths(output_dir, hooked_name)[0])
+
+
+def _write_recipe(output_path, video_path, img_path, x, y, duration):
+    """Keep what it takes to encode ``output_path`` later: the overlay image
+    and where it went. The source must sit in the same directory."""
+    output_dir = os.path.dirname(output_path)
+    if os.path.dirname(os.path.abspath(video_path)) != os.path.abspath(output_dir):
+        raise ValueError("the hook's source must be next to its output")
+    json_path, png_path = recipe_paths(output_dir, os.path.basename(output_path))
+    shutil.copyfile(img_path, png_path)
+    with open(json_path, "w") as f:
+        json.dump({"source": os.path.basename(video_path), "x": x, "y": y,
+                   "duration": duration}, f)
+
+
+def materialize(output_dir, hooked_name):
+    """Encode ``hooked_name`` from its recipe if it is not on disk yet.
+
+    True when the file exists afterwards. Safe to call concurrently: each
+    call encodes to its own temporary name and renames it into place."""
+    path = os.path.join(output_dir, hooked_name)
+    if os.path.exists(path):
+        return True
+    json_path, png_path = recipe_paths(output_dir, hooked_name)
+    try:
+        with open(json_path) as f:
+            r = json.load(f)
+        source = os.path.join(output_dir, os.path.basename(r["source"]))
+    except (OSError, ValueError, KeyError, TypeError):
+        return False
+    if not (os.path.exists(source) and os.path.exists(png_path)):
+        return False
+    tmp = os.path.join(output_dir, f".part_{uuid.uuid4().hex[:8]}_{hooked_name}")
+    cmd = _overlay_cmd(source, png_path, _overlay_graph(r["x"], r["y"], r.get("duration")), tmp)
+    try:
+        result = _run_encode(cmd, source, [tmp])
+        if result.returncode != 0 and not finished_before_crash(result, [tmp]):
+            print(f"⚠️ Could not encode {hooked_name} from its recipe")
+            return False
+        os.replace(tmp, path)
+        return True
+    finally:
+        if os.path.exists(tmp):
+            os.remove(tmp)

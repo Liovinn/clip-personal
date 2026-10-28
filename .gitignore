@@ -46,6 +46,7 @@ skills-lock.json
 # Cloud env example kept local only (avoid leaking infra hints)
 .env.cloud.example
 .worktrees
+osrender/target/
 
 # Instrucciones locales con datos de infra (repo público)
 CLAUDE.local.md

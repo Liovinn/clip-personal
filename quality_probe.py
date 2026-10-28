@@ -54,6 +54,7 @@ def main() -> int:
         return 0
     try:
         import yt_dlp
+        import ssrf_guard
 
         warnings = []
 
@@ -92,7 +93,7 @@ def main() -> int:
 
         for mode, opts in attempts:
             try:
-                with yt_dlp.YoutubeDL(opts) as ydl:
+                with ssrf_guard.guarded(), yt_dlp.YoutubeDL(opts) as ydl:
                     info = ydl.extract_info(args.url, download=False)
                 formats = info.get('formats') or []
                 heights = [

@@ -57,9 +57,9 @@ Speed at equal quality:
   without); only a clip with no captions gets its own `mark_delivery` pass.
   Those multi-output passes can segfault on exit after every file is written
   (`ffmpeg_utils.finished_before_crash` keeps the files then).
-- **hooked_ + subtitled_ from one ffmpeg** (`hooks.add_hook_to_video(also=)`):
-  the editor still needs both files (re-caption walks back to hooked_, hook
-  replace to the canonical), so nothing is skipped, only one decode.
+- **Hook + captions from one decode** (`hooks.add_hook_to_video(also=)`):
+  the served captioned file is encoded immediately. The hook-only layer is
+  materialized on demand if an editor action needs it (see below).
 - **Cheap cut** (`ffmpeg_utils.INTERMEDIATE`): the cut is decoded again by the
   reframe at once, so on NVENC it uses p1 at a lower `-cq` (`CUT_NVENC_PRESET`,
   `CUT_NVENC_CQ`) instead of p4 + hq + AQ. libx264 keeps its old settings.
@@ -72,6 +72,20 @@ Speed at equal quality:
   pressure the API and the editor endpoints, which run in the API process, go
   first. Containers compete by their CPU weight, not by nice, so this only
   orders work inside the instance.
+- **NVENC encode slots** (`JOB_NVENC_SLOTS`, default 4, `app._job_encode_env`
+  → `bin/ffmpeg`): at most that many job ffmpegs encode with NVENC at once,
+  host-wide (flock files `output/.nvenc-N.lock`, shared by both containers of
+  a deploy). A few encodes already keep the card's NVENC engines busy; with
+  5 jobs × `CLIP_WORKERS` uncapped, dozens of sessions split the same engines
+  and starved any other encoder on the card without finishing jobs sooner.
+  Exempt: the nvenc probe (`NVENC_SLOTS=0` in its env), pipe-fed encoders,
+  and the API process (editor renders). A queued encode runs anyway after
+  `NVENC_SLOT_WAIT` (600 s). 0 turns it off.
+- **Encoding presets:** this fork retains p5 for QUALITY and p4 for
+  QUALITY_FAST/DELIVERY. `FFMPEG_NVENC_PRESET=p3` opts into upstream's faster
+  preset, with the same quality targets and AQ. It also applies to osrender;
+  intermediate cuts retain their separate preset. Benchmark output size and
+  total delivery time before changing this setting.
 - **`CLIP_WORKERS=6`** by default.
 - **Decode on the card, keep the CPU's pixels** (`gpu_decode`): the scene
   pass, the sampled frames of the classifiers (`frame_sampler.read_at_path`),
@@ -82,6 +96,32 @@ Speed at equal quality:
   4:2:0 H.264/HEVC without rotation, and only with `GPU_DECODE_MIN_FREE_MB`
   free on the card; any ffmpeg that fails on the card runs again on the CPU.
   Kill switches: `GPU_DECODE=0` (all), `GPU_DECODE_RENDER=0` (encodes only).
+- **Optional one-pass GPU render** (`gpu_render` + `osrender/`): the
+  reframe render (`reframe_v2.encode_scenes`) runs as a single process that
+  keeps the frames on the card (NVDEC -> CUDA kernels -> NVENC) instead of one
+  ffmpeg per scene downloading every frame for crop/scale/blur on the CPU and
+  a concat. The layers come from the scenes' own filtergraphs
+  (`gpu_render.layers_from_graph`, which mirrors ffmpeg's even-coordinate
+  overlay/pad/crop and sendcmd's frame timing). The hardware equivalence suite
+  requires SSIM >= 0.97 per layout (`tests/test_gpu_render_equivalence.py`);
+  this is a validation threshold, not a benchmark of a particular host. It takes
+  an NVENC slot like `bin/ffmpeg`. Unreadable graph, unsupported source, no
+  binary or any failure: the scene-by-scene ffmpeg render, unchanged.
+  Disabled by default in Clipedit. `GPU_RENDER=1` enables it and asks the Vast
+  bootstrap to compile/install the binary using `build-gpu-renderer.sh`.
+  The default startup does not install Rust or compile it. `GPU_RENDER=0`
+  restores the FFmpeg path. Punch-in only renders whole here: ffmpeg's crop
+  ends the stream at the first size change a sendcmd makes.
+- **Hooked-only picture on demand** (`hooks.materialize`, `HOOK_LAZY`): the
+  job's hook + captions pass encodes only what is served (captioned, plus the
+  free plan's `wm_` copy). The hooked-only `hooked_<ts>_<clean>` is needed
+  only when the editor re-captions or removes the captions, so the pass keeps
+  a recipe (`.hookrecipe_<name>.json` + `.png`: overlay image, position,
+  window) and `app._strip_burned_captions` encodes it the first time it is
+  asked for, off the event loop; `/api/hook` strips past it without encoding.
+  Same filter and encoder as before, so the file is the same. No recipe or a
+  failed encode: the walk-back stops as it always did. `HOOK_LAZY=0` encodes
+  it in the pass again.
 - **Sparse trajectory** (`reframe_v2._sparse_trajectory`, `SPARSE_TRAJECTORY`):
   the detectors look at one frame in `DETECT_STRIDE` plus scene starts, and only
   in TRACK scenes, so only those are scaled and piped (ffmpeg `select`). It

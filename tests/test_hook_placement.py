@@ -2,6 +2,7 @@
 exactly the old spot when there is no face. Faces are synthetic boxes in
 frame fractions (x0, y0, x1, y1), the shape hook_placement.detect_faces
 returns."""
+import os
 import subprocess
 
 import pytest
@@ -203,10 +204,73 @@ class TestAddHookToVideo:
         assert made == [(1080, 1920, "[sm]", "[2:v]", "[m]")]
         assert cmd[cmd.index("logo.png") - 1] == "-i"
         graph = cmd[cmd.index("-filter_complex") + 1]
-        assert "split=2[h][c];[c]ass=subs.ass,split=2[s][sm];" in graph
+        assert ",ass=subs.ass,split=2[s][sm];" in graph and "[h]" not in graph
         assert [cmd[i + 1] for i, a in enumerate(cmd) if a == "-map" and cmd[i + 1].startswith("[")] \
-            == ["[h]", "[s]", "[m]"]
-        assert cmd[-1] == marked and hooked in cmd and captioned in cmd
+            == ["[s]", "[m]"]
+        # The hooked-only picture is not encoded: its recipe is kept instead.
+        assert cmd[-1] == marked and captioned in cmd and hooked not in cmd
+        assert hooks.has_recipe(str(tmp_path), "hooked.mp4")
+
+    def test_hooked_copy_is_encoded_in_the_same_pass_when_not_lazy(self, fake_ffmpeg,
+                                                                  monkeypatch, tmp_path):
+        hooks, calls, video = fake_ffmpeg
+        monkeypatch.setattr(hooks, "LAZY", False)
+        hooked, captioned = str(tmp_path / "hooked.mp4"), str(tmp_path / "subtitled.mp4")
+        hooks.add_hook_to_video(video, "Hi", hooked, position="top", duration=5,
+                                also=("ass=subs.ass", captioned))
+        cmd = calls["cmd"]
+        assert "split=2[h][c];[c]ass=subs.ass[s]" in cmd[cmd.index("-filter_complex") + 1]
+        assert hooked in cmd and captioned in cmd
+        assert not hooks.has_recipe(str(tmp_path), "hooked.mp4")
+
+    def test_recipe_encodes_the_hooked_copy_on_demand(self, fake_ffmpeg, monkeypatch, tmp_path):
+        hooks, calls, video = fake_ffmpeg
+        hooked, captioned = str(tmp_path / "hooked.mp4"), str(tmp_path / "subtitled.mp4")
+        hooks.add_hook_to_video(video, "Hi", hooked, position="top", duration=5,
+                                also=("ass=subs.ass", captioned))
+        burn = calls["cmd"]
+
+        def run(cmd, **kw):
+            calls["cmd"] = cmd
+            open(cmd[-1], "wb").write(b"mp4")
+            return subprocess.CompletedProcess(cmd, 0, b"", b"")
+        monkeypatch.setattr(hooks.subprocess, "run", run)
+        assert hooks.materialize(str(tmp_path), "hooked.mp4")
+        cmd = calls["cmd"]
+        # Same overlay, same place, same window as the burn drew it.
+        overlay = burn[burn.index("-filter_complex") + 1].split(",ass=")[0]
+        assert cmd[cmd.index("-filter_complex") + 1] == overlay
+        assert cmd[cmd.index("-i") + 1] == video
+        assert open(hooked, "rb").read() == b"mp4"
+        assert not [n for n in os.listdir(tmp_path) if n.startswith(".part_")]
+        # Already there: nothing to encode.
+        monkeypatch.setattr(hooks.subprocess, "run", lambda *a, **k: pytest.fail("re-encoded"))
+        assert hooks.materialize(str(tmp_path), "hooked.mp4")
+
+    def test_materialize_without_recipe_or_source_is_false(self, fake_ffmpeg, monkeypatch,
+                                                          tmp_path):
+        hooks, calls, video = fake_ffmpeg
+        assert not hooks.materialize(str(tmp_path), "hooked_1_clip.mp4")
+        hooked, captioned = str(tmp_path / "hooked.mp4"), str(tmp_path / "subtitled.mp4")
+        hooks.add_hook_to_video(video, "Hi", hooked, position="top", duration=5,
+                                also=("ass=subs.ass", captioned))
+        os.remove(video)
+        monkeypatch.setattr(hooks.subprocess, "run", lambda *a, **k: pytest.fail("encoded"))
+        assert not hooks.materialize(str(tmp_path), "hooked.mp4")
+
+    def test_failed_on_demand_encode_leaves_nothing(self, fake_ffmpeg, monkeypatch, tmp_path):
+        hooks, calls, video = fake_ffmpeg
+        hooked, captioned = str(tmp_path / "hooked.mp4"), str(tmp_path / "subtitled.mp4")
+        hooks.add_hook_to_video(video, "Hi", hooked, position="top", duration=5,
+                                also=("ass=subs.ass", captioned))
+
+        def run(cmd, **kw):
+            open(cmd[-1], "wb").write(b"half")
+            return subprocess.CompletedProcess(cmd, 1, b"", b"boom")
+        monkeypatch.setattr(hooks.subprocess, "run", run)
+        assert not hooks.materialize(str(tmp_path), "hooked.mp4")
+        assert not os.path.exists(hooked)
+        assert not [n for n in os.listdir(tmp_path) if n.startswith(".part_")]
 
     def test_a_crash_after_every_output_is_finished_keeps_them(self, monkeypatch, fake_ffmpeg,
                                                               tmp_path):
