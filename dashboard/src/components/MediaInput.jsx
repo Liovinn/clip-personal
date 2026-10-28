@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link2, Upload, FileVideo, X, Info, Loader2, ChevronDown, ArrowRight } from 'lucide-react';
+import { Link2, Upload, FileVideo, X, Info, Loader2, ArrowRight } from 'lucide-react';
 import { track } from '../lib/analytics';
 import { getApiUrl } from '../config';
 
@@ -41,7 +41,6 @@ export default function MediaInput({ onProcess, isProcessing }) {
     const [showInfo, setShowInfo] = useState(false);
     // Advanced generation controls — empty string means "let the AI decide",
     // which keeps the default pipeline behavior untouched.
-    const [showAdvanced, setShowAdvanced] = useState(false);
     const [targetClips, setTargetClips] = useState('');
     const [clipMinSeconds, setClipMinSeconds] = useState('');
     const [clipMaxSeconds, setClipMaxSeconds] = useState('');
@@ -145,7 +144,7 @@ export default function MediaInput({ onProcess, isProcessing }) {
     return (
         <div className="clipedit-input-panel card animate-fade">
             <div className="clipedit-panel-heading">
-                <h2>Video sumber</h2>
+                <h2>Video</h2>
             </div>
             <div className="clipedit-source-tabs flex gap-2 mb-6" data-tutorial="source-tabs">
                 <button
@@ -157,7 +156,7 @@ export default function MediaInput({ onProcess, isProcessing }) {
                         }`}
                 >
                     <Upload size={16} className={`hidden sm:block ${mode === 'file' ? 'text-brass' : ''}`} />
-                    Unggah file
+                    Upload file
                 </button>
                 {youtubeUrlEnabled && (
                     <button
@@ -169,7 +168,7 @@ export default function MediaInput({ onProcess, isProcessing }) {
                             }`}
                     >
                         <Link2 size={16} className={`hidden sm:block ${mode === 'url' ? 'text-brass' : ''}`} />
-                        URL video
+                        Link video
                     </button>
                 )}
             </div>
@@ -180,10 +179,10 @@ export default function MediaInput({ onProcess, isProcessing }) {
                         <div className="relative">
                             <input
                                 type="url"
-                                aria-label="URL video"
+                                aria-label="Link video"
                                 value={url}
                                 onChange={(e) => setUrl(e.target.value)}
-                                placeholder="Tempel tautan video (https://...)"
+                                placeholder="Tempel link video (https://...)"
                                 className="input-field pr-11"
                                 required
                             />
@@ -198,7 +197,7 @@ export default function MediaInput({ onProcess, isProcessing }) {
                                 </button>
                                 {showInfo && (
                                     <div className="absolute right-0 top-full mt-2 w-64 z-20 card p-4 text-left animate-fade">
-                                        <p className="eyebrow mb-2">Tempel tautan dari</p>
+                                        <p className="eyebrow mb-2">Gunakan link dari</p>
                                         <div className="flex flex-wrap gap-1.5">
                                             {SUPPORTED_PLATFORMS.map((p) => (
                                                 <span key={p} className="text-xs px-2 py-0.5 rounded-full bg-paper3 text-ink2">
@@ -207,7 +206,7 @@ export default function MediaInput({ onProcess, isProcessing }) {
                                             ))}
                                         </div>
                                         <p className="text-xs text-muted mt-2.5 leading-relaxed">
-                                            …dan lebih dari 1.000 situs lainnya. Video publik biasanya dapat diambil dari tautannya.
+                                            Mendukung lebih dari 1.000 situs. Gunakan link video yang bisa diakses publik.
                                         </p>
                                     </div>
                                 )}
@@ -238,7 +237,7 @@ export default function MediaInput({ onProcess, isProcessing }) {
                         ) : null}
                         {file && fileTooShort ? (
                             <p className="text-danger text-sm mt-3" role="alert">
-                                Durasi video ini {Math.round(fileSeconds)} detik. Pembuatan klip memerlukan video berdurasi minimal {MIN_SOURCE_SECONDS} detik. Pilih video yang lebih panjang.
+                                Video ini terlalu pendek ({Math.round(fileSeconds)} detik). Gunakan video dengan durasi minimal {MIN_SOURCE_SECONDS} detik.
                             </p>
                         ) : null}
                         {!file && (
@@ -259,7 +258,7 @@ export default function MediaInput({ onProcess, isProcessing }) {
 
                 {/* Output format selector */}
                 <div className="mt-5" data-tutorial="output-format">
-                    <p className="eyebrow mb-2">Format keluaran</p>
+                    <p className="eyebrow mb-2">Format</p>
                     <div className="grid grid-cols-3 gap-2">
                         {[
                             { value: 'vertical', label: '9:16', hint: 'Shorts · Reels · TikTok', w: 18, h: 32 },
@@ -293,110 +292,94 @@ export default function MediaInput({ onProcess, isProcessing }) {
                     </div>
                 </div>
 
-                {/* Advanced generation controls — collapsed by default; blank = AI decides */}
-                <div className="mt-4">
-                    <button
-                        type="button"
-                        onClick={() => setShowAdvanced((v) => !v)}
-                        aria-expanded={showAdvanced}
-                        aria-controls="clipedit-advanced-options"
-                        className="flex items-center gap-1.5 text-xs text-muted hover:text-ink2 lowercase transition-colors"
-                    >
-                        <ChevronDown size={14} className={`transition-transform ${showAdvanced ? 'rotate-180' : ''}`} />
-                        Opsi lanjutan
-                        {(targetClips || clipMinSeconds || clipMaxSeconds || !autoHook) && (
-                            <span className="text-brass">·</span>
-                        )}
-                    </button>
-                    {showAdvanced && (
-                        /* Stacked on a phone: three number fields side by side leaves
-                           ~100px each, which crushes both label and value. */
-                        <div id="clipedit-advanced-options" className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-2 animate-fade">
-                            <div>
-                                <label htmlFor="clipedit-target-clips" className="eyebrow mb-1.5">Target jumlah klip</label>
-                                <input
-                                    id="clipedit-target-clips"
-                                    type="number" min="1" max="15" step="1"
-                                    value={targetClips}
-                                    onChange={(e) => setTargetClips(e.target.value)}
-                                    placeholder="Otomatis"
-                                    className="input-field"
-                                />
-                            </div>
-                            <div>
-                                <label htmlFor="clipedit-min-length" className="eyebrow mb-1.5">Durasi min. (detik)</label>
-                                <input
-                                    id="clipedit-min-length"
-                                    type="number" min="5" max="175" step="1"
-                                    value={clipMinSeconds}
-                                    onChange={(e) => setClipMinSeconds(e.target.value)}
-                                    placeholder="15"
-                                    className="input-field"
-                                />
-                            </div>
-                            <div>
-                                <label htmlFor="clipedit-max-length" className="eyebrow mb-1.5">Durasi maks. (detik)</label>
-                                <input
-                                    id="clipedit-max-length"
-                                    type="number" min="10" max="180" step="1"
-                                    value={clipMaxSeconds}
-                                    onChange={(e) => setClipMaxSeconds(e.target.value)}
-                                    placeholder="60"
-                                    className="input-field"
-                                />
-                            </div>
-                            <p className="col-span-1 sm:col-span-3 text-[11px] leading-relaxed text-muted">
-                                Jumlah klip mengikuti isi video dan bisa lebih sedikit dari target. Kosongkan agar AI menentukan secara otomatis.
-                            </p>
-                            <div className="col-span-1 sm:col-span-3 flex flex-wrap items-center justify-between gap-3 pt-3 sm:pt-1 border-t border-rule">
-                                <span className="text-xs text-ink2">Tata letak vertikal</span>
-                                <select
-                                    value={layout}
-                                    onChange={(e) => setLayout(e.target.value)}
-                                    className="input-field !w-auto text-xs py-1.5"
-                                    aria-label="Tata letak vertikal"
-                                >
-                                    <option value="auto">Otomatis (dipilih AI)</option>
-                                    <option value="split">Dua pembicara bertumpuk</option>
-                                    <option value="screencast">Layar di atas pembicara</option>
-                                    <option value="none">Satu bidang potong</option>
-                                </select>
-                            </div>
-                            <div className="col-span-1 sm:col-span-3 flex flex-wrap items-center justify-between gap-3 pt-3 sm:pt-1 border-t border-rule">
-                                <label className="flex items-center gap-2 text-xs text-ink2 cursor-pointer select-none">
-                                    <input
-                                        type="checkbox"
-                                        checked={autoHook}
-                                        onChange={(e) => setAutoHook(e.target.checked)}
-                                        className="w-4 h-4 shrink-0 accent-[var(--color-accent)] cursor-pointer"
-                                    />
-                                    Judul pembuka otomatis pada klip
-                                </label>
-                                {autoHook && (
-                                    <select
-                                        aria-label="Gaya judul pembuka"
-                                        value={autoHookStyle}
-                                        onChange={(e) => setAutoHookStyle(e.target.value)}
-                                        className="input-field !w-auto text-xs py-1.5"
-                                    >
-                                        <option value="pill">Kapsul</option>
-                                        <option value="classic">Klasik</option>
-                                        <option value="dark">Gelap</option>
-                                        <option value="yellow">Kuning</option>
-                                        <option value="red">Merah</option>
-                                        <option value="outline">Garis tepi</option>
-                                        <option value="outline_yellow">Garis tepi+</option>
-                                    </select>
-                                )}
-                                {autoHook && (
-                                    <p className="w-full text-[11px] leading-relaxed text-muted">
-                                        Teks, gaya, posisi, dan ukuran judul pembuka bisa diubah melalui tombol judul pada setiap klip.
-                                    </p>
-                                )}
-                            </div>
+                {/* Always visible; blank values still let the AI decide. */}
+                <section className="ce-clip-settings" aria-labelledby="clipedit-options-heading">
+                    <h3 id="clipedit-options-heading">Pengaturan klip</h3>
+                    <div id="clipedit-advanced-options" className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-2">
+                        <div>
+                            <label htmlFor="clipedit-target-clips" className="eyebrow mb-1.5">Jumlah klip</label>
+                            <input
+                                id="clipedit-target-clips"
+                                type="number" min="1" max="15" step="1"
+                                value={targetClips}
+                                onChange={(e) => setTargetClips(e.target.value)}
+                                placeholder="Otomatis"
+                                className="input-field"
+                            />
                         </div>
-                    )}
-                </div>
+                        <div>
+                            <label htmlFor="clipedit-min-length" className="eyebrow mb-1.5">Durasi minimum (detik)</label>
+                            <input
+                                id="clipedit-min-length"
+                                type="number" min="5" max="175" step="1"
+                                value={clipMinSeconds}
+                                onChange={(e) => setClipMinSeconds(e.target.value)}
+                                placeholder="15"
+                                className="input-field"
+                            />
+                        </div>
+                        <div>
+                            <label htmlFor="clipedit-max-length" className="eyebrow mb-1.5">Durasi maksimum (detik)</label>
+                            <input
+                                id="clipedit-max-length"
+                                type="number" min="10" max="180" step="1"
+                                value={clipMaxSeconds}
+                                onChange={(e) => setClipMaxSeconds(e.target.value)}
+                                placeholder="60"
+                                className="input-field"
+                            />
+                        </div>
+                        <p className="col-span-1 sm:col-span-3 text-[11px] leading-relaxed text-muted">
+                            Kosongkan jumlah dan durasi agar AI menentukannya. Hasil klip bisa lebih sedikit, sesuai isi video.
+                        </p>
+                        <div className="col-span-1 sm:col-span-3 flex flex-wrap items-center justify-between gap-3 pt-3 sm:pt-1 border-t border-rule">
+                            <span className="text-xs text-ink2">Layout video</span>
+                            <select
+                                value={layout}
+                                onChange={(e) => setLayout(e.target.value)}
+                                className="input-field !w-auto text-xs py-1.5"
+                                aria-label="Layout video"
+                            >
+                                <option value="auto">Otomatis (dipilih AI)</option>
+                                <option value="split">Dua pembicara, atas dan bawah</option>
+                                <option value="screencast">Layar di atas pembicara</option>
+                                <option value="none">Crop standar</option>
+                            </select>
+                        </div>
+                        <div className="col-span-1 sm:col-span-3 flex flex-wrap items-center justify-between gap-3 pt-3 sm:pt-1 border-t border-rule">
+                            <label className="flex items-center gap-2 text-xs text-ink2 cursor-pointer select-none">
+                                <input
+                                    type="checkbox"
+                                    checked={autoHook}
+                                    onChange={(e) => setAutoHook(e.target.checked)}
+                                    className="w-4 h-4 shrink-0 accent-[var(--color-accent)] cursor-pointer"
+                                />
+                                Tambahkan judul otomatis
+                            </label>
+                            {autoHook && (
+                                <select
+                                    aria-label="Gaya judul"
+                                    value={autoHookStyle}
+                                    onChange={(e) => setAutoHookStyle(e.target.value)}
+                                    className="input-field !w-auto text-xs py-1.5"
+                                >
+                                    <option value="pill">Kapsul</option>
+                                    <option value="classic">Klasik</option>
+                                    <option value="dark">Gelap</option>
+                                    <option value="yellow">Kuning</option>
+                                    <option value="red">Merah</option>
+                                    <option value="outline">Garis tepi</option>
+                                    <option value="outline_yellow">Garis tepi+</option>
+                                </select>
+                            )}
+                            {autoHook && (
+                                <p className="w-full text-[11px] leading-relaxed text-muted">
+                                    Judul, gaya, dan posisinya bisa Anda ubah setelah klip selesai.
+                                </p>
+                            )}
+                        </div>
+                    </div>
+                </section>
 
                 <button
                     type="submit"

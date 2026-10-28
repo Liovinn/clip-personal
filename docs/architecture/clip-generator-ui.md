@@ -4,6 +4,14 @@ The clipping workspace uses Bahasa Indonesia for navigation, settings, help,
 editor labels and download controls. The HTML language is `id`. Internal API
 values, storage keys, video prompts, generated content and raw server logs keep
 their original behavior; translating the UI does not force the video language.
+The copy uses clear, professional Indonesian and familiar product terms.
+Clip count, duration, layout and auto-title settings are always visible on
+the creation page; there is no advanced-options disclosure. Empty fields keep
+the existing AI defaults. The output-format label is simply "Format".
+
+The intended deployment is a VPS/domain frontend and API with RunPod Serverless
+GPU workers. This is a deployment direction, not an implemented worker or queue;
+the existing Vast scripts are legacy utilities and do not define the UI flow.
 
 Clipedit presents only the clip generator. The horizontal navigation contains
 Clip generator and Settings, on both desktop and mobile. The start view uses a

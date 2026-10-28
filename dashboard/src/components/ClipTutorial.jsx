@@ -6,12 +6,12 @@ const TOUR = [
   {
     target: '[data-tutorial="nav-clips"]',
     title: "Pembuat klip",
-    body: "Ubah video panjang menjadi klip pendek. Unggah file atau tempel tautan video untuk memulai.",
+    body: "Ubah video panjang menjadi klip pendek. Upload file atau tempel link video untuk memulai.",
   },
   {
     target: '[data-tutorial="source-tabs"]',
-    title: "Unggah atau tempel tautan",
-    body: "Unggah MP4, atau pilih URL video lalu tempel tautan YouTube, TikTok, Instagram…",
+    title: "Upload atau tempel link",
+    body: "Upload MP4 atau pilih Link video, lalu tempel link dari YouTube, TikTok, Instagram…",
   },
   {
     target: '[data-tutorial="drop-zone"]',
@@ -20,7 +20,7 @@ const TOUR = [
   },
   {
     target: '[data-tutorial="output-format"]',
-    title: "Format keluaran",
+    title: "Format",
     body: "9:16 cocok untuk TikTok, Reels, dan Shorts. Ubah jika Anda memerlukan format persegi atau lanskap.",
   },
   {

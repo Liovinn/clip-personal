@@ -1019,7 +1019,7 @@ function App() {
               <div className="ce-start-layout">
                 <section className="ce-page-heading">
                   <h1>Buat klip</h1>
-                  <p>Temukan momen terbaik dalam video Anda. Siapkan untuk dibagikan.</p>
+                  <p>Ubah video panjang menjadi klip yang siap dibagikan.</p>
                 </section>
                 <MediaInput onProcess={handleProcess} isProcessing={status === 'processing'} />
               </div>
