@@ -145,7 +145,7 @@ export default function MediaInput({ onProcess, isProcessing }) {
     return (
         <div className="clipedit-input-panel card animate-fade">
             <div className="clipedit-panel-heading">
-                <h2>Source video</h2>
+                <h2>Video sumber</h2>
             </div>
             <div className="clipedit-source-tabs flex gap-2 mb-6" data-tutorial="source-tabs">
                 <button
@@ -157,7 +157,7 @@ export default function MediaInput({ onProcess, isProcessing }) {
                         }`}
                 >
                     <Upload size={16} className={`hidden sm:block ${mode === 'file' ? 'text-brass' : ''}`} />
-                    Upload file
+                    Unggah file
                 </button>
                 {youtubeUrlEnabled && (
                     <button
@@ -169,7 +169,7 @@ export default function MediaInput({ onProcess, isProcessing }) {
                             }`}
                     >
                         <Link2 size={16} className={`hidden sm:block ${mode === 'url' ? 'text-brass' : ''}`} />
-                        Video URL
+                        URL video
                     </button>
                 )}
             </div>
@@ -180,10 +180,10 @@ export default function MediaInput({ onProcess, isProcessing }) {
                         <div className="relative">
                             <input
                                 type="url"
-                                aria-label="Video URL"
+                                aria-label="URL video"
                                 value={url}
                                 onChange={(e) => setUrl(e.target.value)}
-                                placeholder="Paste a video link (https://...)"
+                                placeholder="Tempel tautan video (https://...)"
                                 className="input-field pr-11"
                                 required
                             />
@@ -191,14 +191,14 @@ export default function MediaInput({ onProcess, isProcessing }) {
                                 <button
                                     type="button"
                                     onClick={() => setShowInfo((v) => !v)}
-                                    aria-label="Supported platforms"
+                                    aria-label="Platform yang didukung"
                                     className="p-1.5 text-muted hover:text-brass transition-colors"
                                 >
                                     <Info size={16} />
                                 </button>
                                 {showInfo && (
                                     <div className="absolute right-0 top-full mt-2 w-64 z-20 card p-4 text-left animate-fade">
-                                        <p className="eyebrow mb-2">Paste a link from</p>
+                                        <p className="eyebrow mb-2">Tempel tautan dari</p>
                                         <div className="flex flex-wrap gap-1.5">
                                             {SUPPORTED_PLATFORMS.map((p) => (
                                                 <span key={p} className="text-xs px-2 py-0.5 rounded-full bg-paper3 text-ink2">
@@ -207,7 +207,7 @@ export default function MediaInput({ onProcess, isProcessing }) {
                                             ))}
                                         </div>
                                         <p className="text-xs text-muted mt-2.5 leading-relaxed">
-                                            …and 1,000+ more sites. If a link has a public video, we can usually fetch it.
+                                            …dan lebih dari 1.000 situs lainnya. Video publik biasanya dapat diambil dari tautannya.
                                         </p>
                                     </div>
                                 )}
@@ -229,7 +229,7 @@ export default function MediaInput({ onProcess, isProcessing }) {
                                 <button
                                     type="button"
                                     onClick={() => setFile(null)}
-                                    aria-label="Remove selected video"
+                                    aria-label="Hapus video yang dipilih"
                                     className="p-1 text-muted hover:text-ink hover:bg-paper3 rounded-full transition-colors"
                                 >
                                     <X size={16} />
@@ -238,8 +238,7 @@ export default function MediaInput({ onProcess, isProcessing }) {
                         ) : null}
                         {file && fileTooShort ? (
                             <p className="text-danger text-sm mt-3" role="alert">
-                                This video is {Math.round(fileSeconds)}s long. Clip generation needs at least {MIN_SOURCE_SECONDS}s
-                                of footage to cut from: it already is a short. Pick a longer video.
+                                Durasi video ini {Math.round(fileSeconds)} detik. Pembuatan klip memerlukan video berdurasi minimal {MIN_SOURCE_SECONDS} detik. Pilih video yang lebih panjang.
                             </p>
                         ) : null}
                         {!file && (
@@ -251,8 +250,8 @@ export default function MediaInput({ onProcess, isProcessing }) {
                                     className="hidden"
                                 />
                                 <Upload className="mx-auto mb-3 text-muted" size={18} />
-                                <p className="text-ink2"><span className="ce-upload-link">Choose a file</span> or drag it here</p>
-                                <p className="ce-upload-help">MP4, MOV · Up to 500 MB · At least {MIN_SOURCE_SECONDS} seconds</p>
+                                <p className="text-ink2"><span className="ce-upload-link">Pilih file</span> atau seret ke sini</p>
+                                <p className="ce-upload-help">MP4, MOV · Maks. 500 MB · Minimal {MIN_SOURCE_SECONDS} detik</p>
                             </label>
                         )}
                     </div>
@@ -260,12 +259,12 @@ export default function MediaInput({ onProcess, isProcessing }) {
 
                 {/* Output format selector */}
                 <div className="mt-5" data-tutorial="output-format">
-                    <p className="eyebrow mb-2">Output format</p>
+                    <p className="eyebrow mb-2">Format keluaran</p>
                     <div className="grid grid-cols-3 gap-2">
                         {[
                             { value: 'vertical', label: '9:16', hint: 'Shorts · Reels · TikTok', w: 18, h: 32 },
-                            { value: 'square', label: '1:1', hint: 'Feed posts', w: 28, h: 28 },
-                            { value: 'horizontal', label: '16:9', hint: 'Keep landscape · YouTube', w: 36, h: 20 },
+                            { value: 'square', label: '1:1', hint: "Postingan feed", w: 28, h: 28 },
+                            { value: 'horizontal', label: '16:9', hint: "Lanskap · YouTube", w: 36, h: 20 },
                         ].map((f) => {
                             const active = outputFormat === f.value;
                             return (
@@ -304,7 +303,7 @@ export default function MediaInput({ onProcess, isProcessing }) {
                         className="flex items-center gap-1.5 text-xs text-muted hover:text-ink2 lowercase transition-colors"
                     >
                         <ChevronDown size={14} className={`transition-transform ${showAdvanced ? 'rotate-180' : ''}`} />
-                        Advanced options
+                        Opsi lanjutan
                         {(targetClips || clipMinSeconds || clipMaxSeconds || !autoHook) && (
                             <span className="text-brass">·</span>
                         )}
@@ -314,18 +313,18 @@ export default function MediaInput({ onProcess, isProcessing }) {
                            ~100px each, which crushes both label and value. */
                         <div id="clipedit-advanced-options" className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-2 animate-fade">
                             <div>
-                                <label htmlFor="clipedit-target-clips" className="eyebrow mb-1.5">Target clip count</label>
+                                <label htmlFor="clipedit-target-clips" className="eyebrow mb-1.5">Target jumlah klip</label>
                                 <input
                                     id="clipedit-target-clips"
                                     type="number" min="1" max="15" step="1"
                                     value={targetClips}
                                     onChange={(e) => setTargetClips(e.target.value)}
-                                    placeholder="auto"
+                                    placeholder="Otomatis"
                                     className="input-field"
                                 />
                             </div>
                             <div>
-                                <label htmlFor="clipedit-min-length" className="eyebrow mb-1.5">Min length (seconds)</label>
+                                <label htmlFor="clipedit-min-length" className="eyebrow mb-1.5">Durasi min. (detik)</label>
                                 <input
                                     id="clipedit-min-length"
                                     type="number" min="5" max="175" step="1"
@@ -336,7 +335,7 @@ export default function MediaInput({ onProcess, isProcessing }) {
                                 />
                             </div>
                             <div>
-                                <label htmlFor="clipedit-max-length" className="eyebrow mb-1.5">Max length (seconds)</label>
+                                <label htmlFor="clipedit-max-length" className="eyebrow mb-1.5">Durasi maks. (detik)</label>
                                 <input
                                     id="clipedit-max-length"
                                     type="number" min="10" max="180" step="1"
@@ -347,21 +346,20 @@ export default function MediaInput({ onProcess, isProcessing }) {
                                 />
                             </div>
                             <p className="col-span-1 sm:col-span-3 text-[11px] leading-relaxed text-muted">
-                                Targets, not guarantees: the AI returns fewer clips when the
-                                material doesn't hold them. Leave blank to let it decide.
+                                Jumlah klip mengikuti isi video dan bisa lebih sedikit dari target. Kosongkan agar AI menentukan secara otomatis.
                             </p>
                             <div className="col-span-1 sm:col-span-3 flex flex-wrap items-center justify-between gap-3 pt-3 sm:pt-1 border-t border-rule">
-                                <span className="text-xs text-ink2">Vertical layout</span>
+                                <span className="text-xs text-ink2">Tata letak vertikal</span>
                                 <select
                                     value={layout}
                                     onChange={(e) => setLayout(e.target.value)}
                                     className="input-field !w-auto text-xs py-1.5"
-                                    aria-label="Vertical layout"
+                                    aria-label="Tata letak vertikal"
                                 >
-                                    <option value="auto">Auto (AI picks per video)</option>
-                                    <option value="split">Two speakers stacked</option>
-                                    <option value="screencast">Screen over presenter</option>
-                                    <option value="none">Single crop only</option>
+                                    <option value="auto">Otomatis (dipilih AI)</option>
+                                    <option value="split">Dua pembicara bertumpuk</option>
+                                    <option value="screencast">Layar di atas pembicara</option>
+                                    <option value="none">Satu bidang potong</option>
                                 </select>
                             </div>
                             <div className="col-span-1 sm:col-span-3 flex flex-wrap items-center justify-between gap-3 pt-3 sm:pt-1 border-t border-rule">
@@ -372,28 +370,27 @@ export default function MediaInput({ onProcess, isProcessing }) {
                                         onChange={(e) => setAutoHook(e.target.checked)}
                                         className="w-4 h-4 shrink-0 accent-[var(--color-accent)] cursor-pointer"
                                     />
-                                    Auto hook titles on clips
+                                    Judul pembuka otomatis pada klip
                                 </label>
                                 {autoHook && (
                                     <select
-                                        aria-label="Hook title style"
+                                        aria-label="Gaya judul pembuka"
                                         value={autoHookStyle}
                                         onChange={(e) => setAutoHookStyle(e.target.value)}
                                         className="input-field !w-auto text-xs py-1.5"
                                     >
-                                        <option value="pill">Pills</option>
-                                        <option value="classic">Classic</option>
-                                        <option value="dark">Dark</option>
-                                        <option value="yellow">Yellow</option>
-                                        <option value="red">Red</option>
-                                        <option value="outline">Outline</option>
-                                        <option value="outline_yellow">Outline+</option>
+                                        <option value="pill">Kapsul</option>
+                                        <option value="classic">Klasik</option>
+                                        <option value="dark">Gelap</option>
+                                        <option value="yellow">Kuning</option>
+                                        <option value="red">Merah</option>
+                                        <option value="outline">Garis tepi</option>
+                                        <option value="outline_yellow">Garis tepi+</option>
                                     </select>
                                 )}
                                 {autoHook && (
                                     <p className="w-full text-[11px] leading-relaxed text-muted">
-                                        You can change each clip&apos;s hook text, style, position and size
-                                        afterwards with its hook button.
+                                        Teks, gaya, posisi, dan ukuran judul pembuka bisa diubah melalui tombol judul pada setiap klip.
                                     </p>
                                 )}
                             </div>
@@ -410,11 +407,11 @@ export default function MediaInput({ onProcess, isProcessing }) {
                     {isProcessing ? (
                         <>
                             <Loader2 size={16} className="animate-spin" />
-                            Processing video…
+                            Memproses video…
                         </>
                     ) : (
                         <>
-                            Generate clips <ArrowRight size={17} />
+                            Buat klip <ArrowRight size={17} />
                         </>
                     )}
                 </button>

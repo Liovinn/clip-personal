@@ -75,9 +75,9 @@ function clearPendingJob() {
 }
 
 const formatRetention = (seconds) => {
-  if (seconds >= 86400) return `${Math.round(seconds / 86400)} day${seconds >= 172800 ? 's' : ''}`;
-  if (seconds >= 3600) return `${Math.round(seconds / 3600)} hour${seconds >= 7200 ? 's' : ''}`;
-  return `${Math.max(1, Math.round(seconds / 60))} min`;
+  if (seconds >= 86400) return `${Math.round(seconds / 86400)} hari`;
+  if (seconds >= 3600) return `${Math.round(seconds / 3600)} jam`;
+  return `${Math.max(1, Math.round(seconds / 60))} menit`;
 };
 
 const SESSION_KEY = 'openshorts_session';
@@ -94,7 +94,7 @@ const readableError = (raw) => {
     if (typeof d === 'string' && d) return d.slice(0, 300);
     if (d && typeof d.message === 'string') return d.message.slice(0, 300);
   } catch (_) { /* not JSON */ }
-  return text.replace(/^Error:\s*/, '').slice(0, 300) || 'Something went wrong.';
+  return text.replace(/^Error:\s*/, '').slice(0, 300) || 'Terjadi kesalahan.';
 };
 // Matches the self-host JOB_RETENTION_SECONDS default. A restore whose job was
 // already purged server-side fails gracefully and clears the saved session.
@@ -874,8 +874,8 @@ function App() {
   // --- UI Components ---
 
   const navItems = [
-    { id: 'dashboard', icon: LayoutDashboard, label: 'Clip generator' },
-    { id: 'settings', icon: Settings, label: 'Settings' },
+    { id: 'dashboard', icon: LayoutDashboard, label: "Pembuat klip" },
+    { id: 'settings', icon: Settings, label: "Pengaturan" },
   ];
   const goToTab = (id) => {
     if (tutorialLock && id !== 'dashboard') return;
@@ -883,7 +883,7 @@ function App() {
   };
   const tabLocked = (id) => tutorialLock && id !== 'dashboard';
   const HeaderNavigation = () => (
-    <nav className="ce-top-nav" aria-label="Workspace">
+    <nav className="ce-top-nav" aria-label="Ruang kerja">
       {navItems.map((item) => {
         const NavIcon = item.icon;
         return (
@@ -917,10 +917,10 @@ function App() {
               <button
                 onClick={handleReset}
                 className="btn-quiet px-3 py-1.5 text-xs shrink-0"
-                aria-label="New Project"
+                aria-label="Proyek baru"
               >
                 <Plus size={14} />
-                <span className="hidden sm:inline">New Project</span>
+                <span className="hidden sm:inline">Proyek baru</span>
               </button>
             )}
           </div>
@@ -940,13 +940,13 @@ function App() {
             {billingEnabled && isSignedIn && !isManaged && (
               <button onClick={() => setShowPlanChoice(true)}
                 className="btn-primary px-4 py-2 text-xs">
-                Choose a plan
+                Pilih paket
               </button>
             )}
             {billingEnabled && !isSignedIn && (
               <button onClick={() => setShowLogin(true)}
                 className="btn-ghost px-4 py-2 text-xs">
-                Sign in
+                Masuk
               </button>
             )}
             {billingEnabled && isSignedIn && <ProfileMenu onUpgrade={isManaged ? openUpsell : null} />}
@@ -958,13 +958,13 @@ function App() {
           <div className="ce-connection-notice shrink-0 animate-fade">
             <div className="flex items-center gap-2.5 min-w-0">
               <KeyRound size={15} className="shrink-0" />
-              <p>Connect Gemini to start creating clips.</p>
+              <p>Hubungkan Gemini untuk mulai membuat klip.</p>
             </div>
             <button
               onClick={() => goToTab('settings')}
               className="ce-notice-action shrink-0"
             >
-              Add API key <ChevronDown size={13} className="-rotate-90" />
+              Tambahkan kunci API <ChevronDown size={13} className="-rotate-90" />
             </button>
           </div>
         )}
@@ -974,12 +974,12 @@ function App() {
           <div className="mx-3 sm:mx-6 mt-2 px-3.5 sm:px-4 py-3 bg-paper2 border border-rule rounded-card flex items-start justify-between gap-3 animate-fade shrink-0">
             <div className="flex items-start sm:items-center gap-2 text-sm text-ink2 flex-wrap min-w-0">
               <RotateCcw size={16} className="text-brass shrink-0 mt-0.5 sm:mt-0" />
-              <span className="font-medium">Session recovered</span>
-              <span className="text-muted text-xs">Your previous work has been restored.</span>
+              <span className="font-medium">Sesi dipulihkan</span>
+              <span className="text-muted text-xs">Pekerjaan sebelumnya telah dipulihkan.</span>
             </div>
             <button
               onClick={() => setSessionRecovered(false)}
-              aria-label="dismiss"
+              aria-label="Tutup"
               className="text-muted hover:text-ink transition-colors shrink-0 -m-1 p-1"
             >
               <X size={16} />
@@ -988,7 +988,7 @@ function App() {
         )}
 
         {/* Non-blocking trial prompt for clip generation. */}
-        {gateThisTab && <TrialGate toolName="the Clip Generator" />}
+        {gateThisTab && <TrialGate toolName="Pembuat klip" />}
 
         {/* Main Workspace */}
         <div className="flex-1 overflow-hidden relative">
@@ -997,14 +997,14 @@ function App() {
           {activeTab === 'settings' && (
             <div className="ce-settings h-full overflow-y-auto custom-scrollbar animate-fade">
               <div className="ce-page-heading">
-                <h1>Settings</h1>
-                <p>Manage your connection for clip generation.</p>
+                <h1>Pengaturan</h1>
+                <p>Kelola koneksi untuk membuat klip.</p>
               </div>
               {billingEnabled ? (
                 <div className="card p-6">
-                  <h2 className="text-base font-medium text-ink lowercase">Clip generation</h2>
+                  <h2 className="text-base font-medium text-ink lowercase">Pembuatan klip</h2>
                   <p className="text-sm text-muted mt-3">
-                    {isManaged ? 'Your account includes clip generation. No API key is required.' : 'Sign in and choose a plan to generate clips.'}
+                    {isManaged ? "Akun Anda sudah mencakup pembuatan klip. Kunci API tidak diperlukan." : "Masuk dan pilih paket untuk membuat klip."}
                   </p>
                 </div>
               ) : (
@@ -1018,8 +1018,8 @@ function App() {
             <div className="clipedit-start h-full overflow-y-auto custom-scrollbar animate-fade">
               <div className="ce-start-layout">
                 <section className="ce-page-heading">
-                  <h1>Create clips</h1>
-                  <p>Find the best moments in your video. Make them ready to share.</p>
+                  <h1>Buat klip</h1>
+                  <p>Temukan momen terbaik dalam video Anda. Siapkan untuk dibagikan.</p>
                 </section>
                 <MediaInput onProcess={handleProcess} isProcessing={status === 'processing'} />
               </div>
@@ -1035,13 +1035,13 @@ function App() {
                 <div className="mb-4 sm:mb-6 flex items-center justify-between gap-2">
                   <h2 className="text-sm font-medium text-ink lowercase flex items-center gap-2">
                     <Activity className={`text-brass ${status === 'processing' ? 'animate-pulse' : ''}`} size={18} />
-                    Live Analysis
+                    Analisis langsung
                   </h2>
                   <span className={status === 'processing' ? 'badge-brass' :
                     status === 'complete' ? 'badge-ok' :
                       'badge-danger'
                     }>
-                    {status.toUpperCase()}
+                    {{ idle: 'Siap', processing: 'Diproses', complete: 'Selesai', error: 'Gagal' }[status] || status}
                   </span>
                 </div>
 
@@ -1052,8 +1052,8 @@ function App() {
                     onClick={() => openUpsell({ source: 'partial_processing', partialJob })}
                     className="mb-4 w-full text-left rounded-card border border-brass/40 bg-brass/5 px-4 py-3 text-sm hover:border-brass transition-colors"
                   >
-                    <span className="text-ink">Clipping the first {partialJob.processed_minutes} of {partialJob.total_minutes} minutes with your free minutes.</span>{' '}
-                    <span className="text-brass font-medium">Clip the whole video →</span>
+                    <span className="text-ink">Memproses {partialJob.processed_minutes} dari {partialJob.total_minutes} menit pertama menggunakan kuota gratis Anda.</span>{' '}
+                    <span className="text-brass font-medium">Proses seluruh video →</span>
                   </button>
                 )}
 
@@ -1063,15 +1063,15 @@ function App() {
                   <div className="mb-4 rounded-card border border-brass/40 bg-brass/5 px-4 py-3 text-sm">
                     <p className="text-ink">
                       {queueInfo.ahead === 0
-                        ? 'You are next in line. Starting in a moment…'
-                        : <>You are <b>#{queueInfo.position}</b> in line · about <b>{Math.max(1, Math.round(queueInfo.eta_seconds / 60))} min</b></>}
+                        ? "Giliran Anda berikutnya. Proses segera dimulai…"
+                        : <>Anda berada di urutan <b>#{queueInfo.position}</b> dalam antrean · sekitar <b>{Math.max(1, Math.round(queueInfo.eta_seconds / 60))} menit</b></>}
                     </p>
                     {billingEnabled && !['starter', 'creator', 'pro'].includes(plan) && queueInfo.ahead > 0 && (
                       <button
                         onClick={() => { track('QueueUpsellClick', { props: { position: String(queueInfo.position) } }); if (isManaged) openUpsell({ source: 'queue' }); else setShowPlanChoice(true); }}
                         className="mt-2 text-xs lowercase text-brass hover:underline"
                       >
-                        paid plans skip the line →
+                        paket berbayar mendapat prioritas →
                       </button>
                     )}
                   </div>
@@ -1096,7 +1096,7 @@ function App() {
                   <div className="sm:hidden mb-3 flex items-start gap-2 text-xs text-ink2 min-w-0">
                     <Loader2 size={14} className="animate-spin text-brass shrink-0 mt-px" />
                     <span className="min-w-0 leading-snug break-words">
-                      {logs.length ? logs[logs.length - 1] : 'starting up…'}
+                      {logs.length ? logs[logs.length - 1] : "memulai…"}
                     </span>
                   </div>
                 )}
@@ -1110,7 +1110,7 @@ function App() {
                     className="w-full px-3.5 sm:px-4 py-2.5 border-b border-rule flex items-center justify-between gap-2 bg-paper2 shrink-0 text-left"
                   >
                     <span className="readout flex items-center gap-2">
-                      <Terminal size={12} /> System Logs
+                      <Terminal size={12} /> Log sistem
                     </span>
                     <span className="flex items-center gap-2 text-muted">
                       {!logsVisible && logs.length > 0 && (
@@ -1142,14 +1142,14 @@ function App() {
                 {/* Keep clip counters and download controls on separate rows. */}
                 <div className="mb-4 sm:mb-6 shrink-0 space-y-3">
                   <h2 className="font-display lowercase text-lg sm:text-xl text-ink flex flex-wrap items-center gap-2">
-                    <span className="mr-auto">Generated Shorts</span>
+                    <span className="mr-auto">Hasil klip</span>
                     {results?.clips?.length > 0 && (
                       <span className="readout bg-paper3 px-2.5 py-1 rounded-full">
-                        {results.clips.length} Clips
+                        {results.clips.length} Klip
                       </span>
                     )}
                     {results?.cost_analysis && !isManaged && (
-                      <span className="readout bg-paper3 px-2.5 py-1 rounded-full" title={`Input: ${results.cost_analysis.input_tokens} | Output: ${results.cost_analysis.output_tokens}`}>
+                      <span className="readout bg-paper3 px-2.5 py-1 rounded-full" title={`Masukan: ${results.cost_analysis.input_tokens} | Keluaran: ${results.cost_analysis.output_tokens}`}>
                         GEMINI · ${results.cost_analysis.total_cost.toFixed(5)}
                       </span>
                     )}
@@ -1170,8 +1170,8 @@ function App() {
                         onClick={() => openUpsell({ source: 'partial_banner', partialJob })}
                         className="w-full text-left px-3 py-2.5 rounded-input bg-paper3 border border-brass/40 hover:border-brass text-sm transition-colors"
                       >
-                        <span className="text-ink">These clips come from the first {partialJob.processed_minutes} of {partialJob.total_minutes} minutes.</span>{' '}
-                        <span className="text-brass font-medium">Clip the whole video →</span>
+                        <span className="text-ink">Klip ini berasal dari {partialJob.processed_minutes} dari {partialJob.total_minutes} menit pertama.</span>{' '}
+                        <span className="text-brass font-medium">Proses seluruh video →</span>
                       </button>
                     )}
                     {/* Peak-moment upsell: they just SAW their clips — sell while
@@ -1181,9 +1181,9 @@ function App() {
                         onClick={() => openUpsell({ source: 'first_video_banner' })}
                         className="w-full text-left px-3 py-2.5 rounded-input bg-paper3 border border-brass/40 hover:border-brass text-sm transition-colors"
                       >
-                        <span className="text-ink">Your first video is on us: we clipped all of it.</span>{' '}
-                        <span className="text-muted">That used this month's free minutes.</span>{' '}
-                        <span className="text-brass font-medium">Keep clipping →</span>
+                        <span className="text-ink">Video pertama Anda gratis: kami memproses seluruh videonya.</span>{' '}
+                        <span className="text-muted">Proses ini menggunakan kuota menit gratis bulan ini.</span>{' '}
+                        <span className="text-brass font-medium">Lanjut buat klip →</span>
                       </button>
                     )}
                     {plan === 'free' && !partialJob && !firstVideoJob && (
@@ -1191,17 +1191,17 @@ function App() {
                         onClick={() => openUpsell({ source: 'results_banner' })}
                         className="w-full text-left px-3 py-2.5 rounded-input bg-paper3 border border-brass/40 hover:border-brass text-sm transition-colors"
                       >
-                        <span className="text-ink">Like these clips?</span>{' '}
-                        <span className="text-muted">Upgrade and these exact clips lose the watermark on the spot, and stay for good.</span>{' '}
-                        <span className="text-brass font-medium">Remove the watermark →</span>
+                        <span className="text-ink">Suka hasil klipnya?</span>{' '}
+                        <span className="text-muted">Tingkatkan paket untuk langsung menghapus watermark dan menyimpan klip ini secara permanen.</span>{' '}
+                        <span className="text-brass font-medium">Hapus watermark →</span>
                       </button>
                     )}
                     {/* Self-host only: cloud archives clips to the video library,
                         here they really are gone once the retention sweep runs. */}
                     {!billingEnabled && jobRetentionSeconds > 0 && (
                       <div className="px-3 py-2.5 rounded-input bg-paper3 border border-paper3 text-sm">
-                        <span className="text-ink">Clips are kept for {formatRetention(jobRetentionSeconds)}, then deleted.</span>{' '}
-                        <span className="text-muted">Download what you want to keep, or raise JOB_RETENTION_SECONDS in your env.</span>
+                        <span className="text-ink">Klip disimpan selama {formatRetention(jobRetentionSeconds)}, lalu dihapus.</span>{' '}
+                        <span className="text-muted">Unduh klip yang ingin disimpan, atau naikkan JOB_RETENTION_SECONDS di variabel lingkungan server.</span>
                       </div>
                     )}
                   </div>
@@ -1236,14 +1236,14 @@ function App() {
                     status === 'processing' ? (
                       <div className="h-full min-h-[140px] flex flex-col items-center justify-center text-muted space-y-3 text-center px-4">
                         <Loader2 size={28} className="animate-spin text-brass" />
-                        <p className="text-sm lowercase">Waiting for clips...</p>
+                        <p className="text-sm lowercase">Menunggu klip…</p>
                         <p className="text-xs text-muted/80 max-w-[26ch] leading-snug">
-                          They appear here one by one as each finishes rendering.
+                          Klip akan muncul satu per satu setelah selesai dirender.
                         </p>
                       </div>
                     ) : status === 'error' ? (
                       <div className="h-full min-h-[120px] flex flex-col items-center justify-center text-danger space-y-2">
-                        <p>Generation failed.</p>
+                        <p>Pembuatan klip gagal.</p>
                       </div>
                     ) : null
                   )}
@@ -1264,47 +1264,47 @@ function App() {
       <Modal
         isOpen={showKeyModal}
         onClose={() => setShowKeyModal(false)}
-        eyebrow="SETUP"
-        title="Gemini API Key Required"
+        eyebrow="PENGATURAN"
+        title="Kunci API Gemini diperlukan"
         footer={
           <div className="flex gap-3">
             <button
               onClick={() => setShowKeyModal(false)}
               className="btn-ghost flex-1 px-4 py-2 text-sm"
             >
-              Cancel
+              Batal
             </button>
             <button
               onClick={() => { setShowKeyModal(false); goToTab('settings'); }}
               className="btn-primary flex-1 px-4 py-2 text-sm"
             >
-              Go to Settings
+              Buka pengaturan
             </button>
           </div>
         }
       >
         <div className="space-y-4">
           <p className="text-sm text-muted">
-            Add a <strong className="text-ink2">Gemini</strong> API key to generate clips, or configure a local LLM on your server.
+            Tambahkan kunci API <strong className="text-ink2">Gemini</strong> untuk membuat klip, atau atur LLM lokal di server Anda.
           </p>
 
           {/* Gemini block */}
           <div className={`rounded-input p-4 space-y-2 border ${!apiKey ? 'border-rule2' : 'border-rule opacity-70'}`}>
             <p className="text-xs font-medium text-ink flex items-center gap-2">
               {apiKey ? <Check size={12} className="text-ok" /> : <AlertTriangle size={12} className="text-warn" />}
-              Gemini API Key {apiKey && <span className="text-ok">— set</span>}
+              Kunci API Gemini {apiKey && <span className="text-ok">— tersimpan</span>}
             </p>
             {!apiKey && (
               <>
                 <ol className="text-xs text-muted space-y-1 list-decimal list-inside">
-                  <li>Go to <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-brass underline">aistudio.google.com/app/apikey</a></li>
-                  <li>Sign in with your Google account</li>
-                  <li>Click "Create API Key"</li>
-                  <li>Copy the key and paste it below</li>
+                  <li>Buka <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-brass underline">aistudio.google.com/app/apikey</a></li>
+                  <li>Masuk dengan akun Google Anda</li>
+                  <li>Klik “Create API Key”</li>
+                  <li>Salin kunci lalu tempel di bawah ini</li>
                 </ol>
                 <input
                   type="text"
-                  placeholder="Paste your Gemini API key here..."
+                  placeholder="Tempel kunci API Gemini Anda di sini…"
                   className="input-field"
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && e.target.value.trim()) {
@@ -1321,24 +1321,23 @@ function App() {
 
       {/* Pre-flight quality gate */}
       {qualityGate && (
-        <Modal isOpen={true} onClose={() => setQualityGate(null)} size="md" eyebrow="HEADS UP" title="low source quality">
+        <Modal isOpen={true} onClose={() => setQualityGate(null)} size="md" eyebrow="PERHATIAN" title="Kualitas video sumber rendah">
           <div className="space-y-4">
             <p className="text-sm text-ink2">
-              YouTube only offers <span className="text-brass font-semibold">{qualityGate.info.max_height}p</span> for this video
-              (below the {qualityGate.info.min_height}p we recommend). Processing anyway will produce lower-quality clips.
+              YouTube hanya menyediakan <span className="text-brass font-semibold">{qualityGate.info.max_height}p</span> untuk video ini (di bawah {qualityGate.info.min_height}p yang disarankan). Jika dilanjutkan, kualitas klip akan lebih rendah.
             </p>
             {qualityGate.info.cookies_invalid && (
               <p className="text-xs text-muted">
-                Your YouTube cookies look expired — refreshing them (export again from an incognito window) often unlocks HD.
+                Cookie YouTube Anda tampaknya kedaluwarsa. Perbarui cookie dengan mengekspor ulang dari jendela samaran untuk mencoba mengakses kualitas HD.
               </p>
             )}
             <div className="flex gap-2 justify-end pt-2">
-              <button onClick={() => setQualityGate(null)} className="btn-ghost">cancel</button>
+              <button onClick={() => setQualityGate(null)} className="btn-ghost">Batal</button>
               <button
                 onClick={() => { const d = qualityGate.data; setQualityGate(null); handleProcess(d, true); }}
                 className="btn-primary"
               >
-                process anyway
+                Tetap proses
               </button>
             </div>
           </div>

@@ -47,7 +47,7 @@ export default function ReframeEditor({ jobId, clipIndex, clipTitle, onClose, on
                     Object.entries(salvos).map(([k, v]) => [Number(k), v])
                 ));
             } catch (e) {
-                if (alive) setError(e?.message || 'Could not read the scenes of this clip.');
+                if (alive) setError(e?.message || 'Adegan klip ini tidak dapat dimuat.');
             } finally {
                 if (alive) setLoading(false);
             }
@@ -130,7 +130,7 @@ export default function ReframeEditor({ jobId, clipIndex, clipTitle, onClose, on
             if (onReframed) onReframed(clipIndex, res);
             onClose();
         } catch (e) {
-            setError(e?.message || 'The re-render failed.');
+            setError(e?.message || 'Render ulang gagal.');
         } finally {
             setSaving(false);
         }
@@ -145,7 +145,7 @@ export default function ReframeEditor({ jobId, clipIndex, clipTitle, onClose, on
                     <div className="flex items-center gap-2.5 min-w-0">
                         <Crosshair size={18} className="text-brass shrink-0" />
                         <div className="min-w-0">
-                            <h2 className="text-base font-medium text-ink lowercase truncate">reframing</h2>
+                            <h2 className="text-base font-medium text-ink lowercase truncate">Atur framing</h2>
                             {clipTitle && <p className="text-xs text-muted truncate">{clipTitle}</p>}
                         </div>
                     </div>
@@ -156,15 +156,13 @@ export default function ReframeEditor({ jobId, clipIndex, clipTitle, onClose, on
 
                 <div className="flex-1 overflow-y-auto overscroll-contain custom-scrollbar p-4 space-y-5">
                     <p className="text-xs text-muted leading-relaxed">
-                        Play a scene to hear who is talking, then drag the rectangle over
-                        the person you want. Each scene is one camera. Scenes you leave
-                        alone keep the automatic camera.
+                        Putar adegan untuk mendengar pembicaranya, lalu geser kotak ke orang yang ingin ditampilkan. Setiap adegan memiliki satu kamera. Adegan yang tidak diubah tetap memakai kamera otomatis.
                     </p>
 
                     {loading && (
                         <div className="flex items-center gap-2 text-sm text-muted py-8 justify-center">
                             <Loader2 size={18} className="animate-spin text-brass" />
-                            reading the scenes…
+                            Memuat adegan…
                         </div>
                     )}
 
@@ -196,18 +194,18 @@ export default function ReframeEditor({ jobId, clipIndex, clipTitle, onClose, on
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 border-t border-rule">
                     <span className="text-xs text-muted">
                         {adjusted === 0
-                            ? 'nothing adjusted yet'
-                            : `${adjusted} scene${adjusted > 1 ? 's' : ''} reframed by hand`}
+                            ? "Belum ada perubahan"
+                            : `${adjusted} adegan diatur secara manual`}
                     </span>
                     <div className="flex items-center gap-2 [&>button]:flex-1 sm:[&>button]:flex-none">
-                        <button onClick={onClose} className="btn-quiet py-2 px-4 text-sm">cancel</button>
+                        <button onClick={onClose} className="btn-quiet py-2 px-4 text-sm">Batal</button>
                         <button
                             onClick={handleSave}
                             disabled={!adjusted || saving}
                             className="btn-primary py-2 px-4 text-sm disabled:opacity-40"
                         >
                             {saving ? <Loader2 size={16} className="animate-spin" /> : null}
-                            {saving ? 're-rendering…' : 'apply reframing'}
+                            {saving ? "Merender ulang…" : "Terapkan framing"}
                         </button>
                     </div>
                 </div>
@@ -303,12 +301,12 @@ function SceneRow({ scene, value, widthFraction, previewUrl, touched, playing,
                     <button
                         onClick={onPlayToggle}
                         className="flex items-center gap-1 text-ink2 hover:text-brass transition-colors"
-                        title="play this scene with sound"
+                        title="Putar adegan ini dengan suara"
                     >
                         {playing ? <Pause size={13} /> : <Play size={13} />}
                     </button>
                     <span className="readout text-muted truncate">
-                        scene {scene.index + 1} · {fmt(scene.start)}–{fmt(scene.end)}
+                        adegan {scene.index + 1} · {fmt(scene.start)}–{fmt(scene.end)}
                     </span>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
@@ -316,16 +314,16 @@ function SceneRow({ scene, value, widthFraction, previewUrl, touched, playing,
                         onClick={onToggleSplit}
                         className={`flex items-center gap-1 transition-colors ${
                             isSplit ? 'text-brass' : 'text-muted hover:text-ink2'}`}
-                        title="stack two regions instead of one window"
+                        title="Tumpuk dua area dalam satu bingkai"
                     >
-                        <Columns2 size={12} /> split
+                        <Columns2 size={12} /> Pisah
                     </button>
                     {touched ? (
                         <button onClick={onReset} className="flex items-center gap-1 text-brass hover:underline">
-                            <RotateCcw size={12} /> automatic
+                            <RotateCcw size={12} /> Otomatis
                         </button>
                     ) : (
-                        <span className="text-muted">automatic</span>
+                        <span className="text-muted">Otomatis</span>
                     )}
                 </div>
             </div>
@@ -371,8 +369,8 @@ function SceneRow({ scene, value, widthFraction, previewUrl, touched, playing,
 
             {isSplit && (
                 <p className="text-[11px] text-muted leading-snug">
-                    Two regions stacked in the vertical frame: <strong>top</strong> above,
-                    <strong> bottom</strong> below. Drag each one onto the person it should hold.
+                    Dua area ditumpuk dalam bingkai vertikal: <strong>Atas</strong> di atas,
+                    <strong> Bawah</strong> di bawah. Geser setiap kotak ke pembicara yang ingin ditampilkan.
                 </p>
             )}
         </div>

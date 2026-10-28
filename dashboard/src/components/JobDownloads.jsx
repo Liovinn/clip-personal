@@ -56,7 +56,7 @@ export default function JobDownloads({ jobId, allowDrive = false }) {
       apiJson(`/api/jobs/${encodeURIComponent(jobId)}/export-vps`, { signal: controller.signal })
         .then((result) => { setVps(result); setVpsPollError(''); })
         .catch(() => {
-          if (!controller.signal.aborted) setVpsPollError('Cannot check upload status. Check your connection and keep Vast running until verification appears.');
+          if (!controller.signal.aborted) setVpsPollError('Status unggahan tidak dapat diperiksa. Periksa koneksi dan biarkan Vast tetap aktif hingga verifikasi muncul.');
         });
     }, 2000);
     return () => { clearInterval(timer); controller.abort(); };
@@ -110,7 +110,7 @@ export default function JobDownloads({ jobId, allowDrive = false }) {
     } catch (failure) {
       if (!controller.signal.aborted) {
         setError(failure.detail || (failure instanceof TypeError
-          ? 'Connection lost. Check the server connection, then retry; your ZIP stays on the server.'
+          ? 'Koneksi terputus. Periksa koneksi server lalu coba lagi; ZIP tetap tersimpan di server.'
           : failure.message));
       }
     } finally {
@@ -123,49 +123,49 @@ export default function JobDownloads({ jobId, allowDrive = false }) {
     <div className="space-y-2 min-w-0">
       <div className="flex flex-wrap gap-2 sm:justify-end">
         <button onClick={() => download()} disabled={!!busy} className="btn-ghost px-3 py-2 text-xs">
-          {busy === 'download' ? <><Loader2 size={14} className="animate-spin" />preparing ZIP…</>
-            : <><Download size={14} />{handedOff ? 'download ZIP again' : 'download all'}{archive ? ` · ${sizeLabel(archive.size_bytes)}` : ''}</>}
+          {busy === 'download' ? <><Loader2 size={14} className="animate-spin" />Menyiapkan ZIP…</>
+            : <><Download size={14} />{handedOff ? "Unduh ulang ZIP" : "Unduh semua"}{archive ? ` · ${sizeLabel(archive.size_bytes)}` : ''}</>}
         </button>
         {allowDrive && <button onClick={() => download(true)} disabled={!!busy || !driveEnabled || !!transfer}
-          title={driveEnabled ? 'Copy the ZIP directly from Vast to Google Drive' : 'Connect Google Drive in Vast first'}
+          title={driveEnabled ? "Salin ZIP langsung dari Vast ke Google Drive" : "Hubungkan Google Drive di Vast terlebih dahulu"}
           className="btn-ghost px-3 py-2 text-xs">
-          {busy === 'drive' ? <><Loader2 size={14} className="animate-spin" />requesting upload…</>
-            : <><UploadCloud size={14} />{transfer ? 'upload requested' : 'save to Drive'}</>}
+          {busy === 'drive' ? <><Loader2 size={14} className="animate-spin" />Meminta unggahan…</>
+            : <><UploadCloud size={14} />{transfer ? "Unggahan diminta" : "Simpan ke Drive"}</>}
         </button>}
         {vpsEnabled && <button onClick={saveVps}
           disabled={!!busy || ['queued', 'uploading'].includes(vps?.status)}
           className="btn-ghost px-3 py-2 text-xs">
-          {busy === 'vps' ? <><Loader2 size={14} className="animate-spin" />preparing ZIP…</>
+          {busy === 'vps' ? <><Loader2 size={14} className="animate-spin" />Menyiapkan ZIP…</>
             : ['queued', 'uploading'].includes(vps?.status)
-            ? <><Loader2 size={14} className="animate-spin" />saving to VPS…</>
-            : <><UploadCloud size={14} />{vps?.status === 'completed' ? 'save to VPS again' : 'save to VPS'}</>}
+            ? <><Loader2 size={14} className="animate-spin" />Menyimpan ke VPS…</>
+            : <><UploadCloud size={14} />{vps?.status === 'completed' ? "Simpan ulang ke VPS" : "Simpan ke VPS"}</>}
         </button>}
       </div>
       {handedOff && <p className="text-xs text-muted" role="status">
-        ZIP ready{archive ? ` · ${sizeLabel(archive.size_bytes)}` : ''}. Check your browser’s Downloads for progress, pause, and resume. Keep this instance running until it finishes.
+        ZIP siap{archive ? ` · ${sizeLabel(archive.size_bytes)}` : ''}. Lihat progres di menu Unduhan browser. Unduhan bisa dijeda dan dilanjutkan. Biarkan instans tetap aktif hingga selesai.
       </p>}
       {allowDrive && !driveEnabled && <p className="text-xs text-muted sm:text-right">
-        <a href={GUIDE} target="_blank" rel="noopener noreferrer" className="underline">Connect Google Drive</a> to save clips without downloading them to this computer first.
+        <a href={GUIDE} target="_blank" rel="noopener noreferrer" className="underline">Hubungkan Google Drive</a> untuk menyimpan klip tanpa mengunduhnya ke komputer ini terlebih dahulu.
       </p>}
       {transfer && <div className="text-xs text-muted space-y-1" role="status">
-        <p>Upload requested · {sizeLabel(transfer.size_bytes)}. This is not a completion confirmation.</p>
-        <p>Check <a href={transfer.console_url} target="_blank" rel="noopener noreferrer" className="underline">Cloud Copy in Vast</a>, then verify the ZIP in Google Drive before destroying the instance.</p>
-        <p className="break-all">Drive folder: {transfer.folder}</p>
+        <p>Unggahan diminta · {sizeLabel(transfer.size_bytes)}. Ini belum berarti unggahan selesai.</p>
+        <p>Periksa <a href={transfer.console_url} target="_blank" rel="noopener noreferrer" className="underline">Cloud Copy di Vast</a>, lalu pastikan ZIP sudah ada di Google Drive sebelum menghapus instans.</p>
+        <p className="break-all">Folder Drive: {transfer.folder}</p>
       </div>}
       {['queued', 'uploading'].includes(vps?.status) && <p className="text-xs text-muted" role="status">
-        {vps.status === 'queued' ? 'VPS upload queued.'
-          : `Sending to VPS: ${sizeLabel(vps.sent_bytes || 0)} / ${sizeLabel(vps.size_bytes)}. Waiting for checksum verification.`}
-        {' '}Keep the Vast instance running until the upload is verified.
+        {vps.status === 'queued' ? "Unggahan ke VPS masuk antrean."
+          : `Mengirim ke VPS: ${sizeLabel(vps.sent_bytes || 0)} / ${sizeLabel(vps.size_bytes)}. Menunggu verifikasi checksum.`}
+        {' '}Biarkan instans Vast tetap aktif hingga unggahan terverifikasi.
       </p>}
       {vps?.status === 'completed' && vps.confirmed && <div className="text-xs text-muted space-y-1" role="status">
-        <p>VPS copy verified · {sizeLabel(vps.size_bytes)}. This copy remains available after the Vast instance is destroyed.</p>
-        <p><a href={vps.url} target="_blank" rel="noopener noreferrer" className="underline">Download ZIP from VPS</a>
-          {' '}· Link expires {new Date(vps.expires_at * 1000).toLocaleString()}.</p>
+        <p>Salinan VPS terverifikasi · {sizeLabel(vps.size_bytes)}. Salinan ini tetap tersedia setelah instans Vast dihapus.</p>
+        <p><a href={vps.url} target="_blank" rel="noopener noreferrer" className="underline">Unduh ZIP dari VPS</a>
+          {' '}· Tautan kedaluwarsa {new Date(vps.expires_at * 1000).toLocaleString('id-ID')}.</p>
         <button className="underline" onClick={async () => {
           try { await navigator.clipboard.writeText(vps.url); setVpsLinkCopied(true); }
-          catch { setError('Copy unavailable. Use your browser’s Copy Link Address on the download link.'); }
-        }}>{vpsLinkCopied ? 'Link copied' : 'Copy download link'}</button>
-        <p>Save the download link before closing this app. Anyone with the link can download this ZIP until it expires.</p>
+          catch { setError('Tautan tidak dapat disalin otomatis. Gunakan menu Salin alamat tautan pada browser.'); }
+        }}>{vpsLinkCopied ? "Tautan disalin" : "Salin tautan unduhan"}</button>
+        <p>Simpan tautan unduhan sebelum menutup aplikasi. Siapa pun yang memiliki tautan dapat mengunduh ZIP ini hingga tautannya kedaluwarsa.</p>
       </div>}
       {vps?.status === 'failed' && <p className="text-xs text-danger" role="alert">{vps.error}</p>}
       {vpsPollError && <p className="text-xs text-danger" role="alert">{vpsPollError}</p>}

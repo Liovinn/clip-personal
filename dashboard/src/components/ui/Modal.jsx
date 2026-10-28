@@ -44,7 +44,7 @@ export default function Modal({ isOpen, onClose, title, eyebrow, size = 'md', ch
         {!hideClose && onClose && (
           <button
             onClick={onClose}
-            aria-label="close"
+            aria-label="Tutup"
             className="absolute top-3 right-3 sm:top-4 sm:right-4 z-10 p-2 rounded-full text-muted hover:text-ink hover:bg-paper3 transition-colors"
           >
             <X size={18} />

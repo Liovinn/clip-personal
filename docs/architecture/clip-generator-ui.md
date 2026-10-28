@@ -1,5 +1,10 @@
 # Clipedit interface
 
+The clipping workspace uses Bahasa Indonesia for navigation, settings, help,
+editor labels and download controls. The HTML language is `id`. Internal API
+values, storage keys, video prompts, generated content and raw server logs keep
+their original behavior; translating the UI does not force the video language.
+
 Clipedit presents only the clip generator. The horizontal navigation contains
 Clip generator and Settings, on both desktop and mobile. The start view uses a
 centered creation panel with a plain heading. Settings shares the same content

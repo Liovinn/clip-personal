@@ -90,7 +90,7 @@ export default function ResultCard({ clip, index, jobId, durable, geminiApiKey, 
         try {
             setDownloadPct(0);
             const response = await fetch(currentVideoUrl);
-            if (!response.ok) throw new Error('Download failed');
+            if (!response.ok) throw new Error('Unduhan gagal');
             const total = Number(response.headers.get('content-length')) || 0;
             let blob;
             // No body reader (old browser) or no length to measure against: fall
@@ -120,7 +120,7 @@ export default function ResultCard({ clip, index, jobId, durable, geminiApiKey, 
             window.URL.revokeObjectURL(url);
             document.body.removeChild(a);
         } catch (err) {
-            console.error('Download error:', err);
+            console.error('Kesalahan unduhan:', err);
             window.open(currentVideoUrl, '_blank');
         } finally {
             setDownloadPct(null);
@@ -240,7 +240,7 @@ export default function ResultCard({ clip, index, jobId, durable, geminiApiKey, 
             // Managed (paid) users get the Gemini key resolved server-side;
             // only BYOK/self-host needs a local key.
             if (!apiKey && !isManaged) {
-                throw new Error("Gemini API Key is missing. Please set it in Settings.");
+                throw new Error("Kunci API Gemini belum diisi. Tambahkan di Pengaturan.");
             }
             const geminiHeaders = apiKey ? { 'X-Gemini-Key': apiKey } : {};
 
@@ -597,7 +597,7 @@ export default function ResultCard({ clip, index, jobId, durable, geminiApiKey, 
                         ordered by score, but this is what the downloaded file
                         is called (clip-N.mp4) and what every api call indexes. */}
                     <span className="bg-black/70 text-ink font-mono text-micro uppercase px-2 py-1 rounded-full">
-                        Clip {index + 1}
+                        Klip {index + 1}
                     </span>
                     {/* A bare number on a thumbnail reads as a duration, a
                         position, anything — it has to name itself and carry
@@ -605,7 +605,7 @@ export default function ResultCard({ clip, index, jobId, durable, geminiApiKey, 
                     {Number.isFinite(clip.predicted_score) && (
                         <span
                             className="bg-black/70 font-mono text-micro uppercase px-2 py-1 rounded-full flex items-center gap-1"
-                            title="Clipedit's prediction of how well this clip will perform, from 0 to 100"
+                            title="Perkiraan performa klip dari Clipedit, dengan skor 0–100"
                         >
                             <TrendingUp size={11} className="shrink-0 text-muted" />
                             <span className="text-muted">viral</span>
@@ -625,8 +625,8 @@ export default function ResultCard({ clip, index, jobId, durable, geminiApiKey, 
                 {isEditing && (
                     <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center z-10 p-4 text-center">
                         <Loader2 size={28} className="text-brass animate-spin mb-3" />
-                        <span className="text-xs text-ink lowercase">ai magic in progress…</span>
-                        <span className="readout mt-1.5">APPLYING VIRAL EDITS · ZOOMS</span>
+                        <span className="text-xs text-ink lowercase">AI sedang menyunting…</span>
+                        <span className="readout mt-1.5">MENERAPKAN EFEK · ZOOM</span>
                     </div>
                 )}
             </div>
@@ -635,7 +635,7 @@ export default function ResultCard({ clip, index, jobId, durable, geminiApiKey, 
             <div className="flex-1 p-4 md:p-5 flex flex-col overflow-hidden min-w-0">
                 <div className="mb-4">
                     <h3 className="text-base font-medium text-ink leading-tight line-clamp-2 mb-2 break-words" title={clip.video_title_for_youtube_short}>
-                        {clip.video_title_for_youtube_short || "Viral Clip Generated"}
+                        {clip.video_title_for_youtube_short || "Klip berhasil dibuat"}
                     </h3>
                     {/* The score alone says how much, not why. One line from
                         the selection pass on what this moment has going for it. */}
@@ -649,7 +649,7 @@ export default function ResultCard({ clip, index, jobId, durable, geminiApiKey, 
                                 ref={whyRef}
                                 className={`text-xs text-muted leading-snug line-clamp-2 break-words ${whyClamped ? 'cursor-pointer' : ''}`}
                                 onClick={() => whyClamped && setWhyOpen(v => !v)}
-                                aria-label="why Clipedit picked this moment"
+                                aria-label="Alasan Clipedit memilih momen ini"
                             >
                                 {clip.why}
                             </p>
@@ -676,11 +676,11 @@ export default function ResultCard({ clip, index, jobId, durable, geminiApiKey, 
                     <div className="bg-paper rounded-input px-3 py-2 border border-rule flex items-center gap-2 min-w-0 overflow-hidden">
                         <span className="eyebrow shrink-0">YOUTUBE</span>
                         <p className="text-xs text-ink2 truncate flex-1 min-w-0">
-                            {clip.video_title_for_youtube_short || "Viral Short Video"}
+                            {clip.video_title_for_youtube_short || "Video pendek"}
                         </p>
                         <button
                             onClick={() => handleCopy('youtube', clip.video_title_for_youtube_short || "Viral Short Video")}
-                            aria-label="copy youtube title"
+                            aria-label="Salin judul YouTube"
                             className="p-1 rounded-full text-muted hover:text-brass transition-colors shrink-0"
                         >
                             {copied === 'youtube' ? <Check size={14} className="text-ok" /> : <Copy size={14} />}
@@ -694,7 +694,7 @@ export default function ResultCard({ clip, index, jobId, durable, geminiApiKey, 
                         </p>
                         <button
                             onClick={() => handleCopy('caption', clip.video_description_for_tiktok || clip.video_description_for_instagram)}
-                            aria-label="copy caption"
+                            aria-label="Salin keterangan"
                             className="p-1 rounded-full text-muted hover:text-brass transition-colors shrink-0"
                         >
                             {copied === 'caption' ? <Check size={14} className="text-ok" /> : <Copy size={14} />}
@@ -705,7 +705,7 @@ export default function ResultCard({ clip, index, jobId, durable, geminiApiKey, 
                         onClick={() => setShowDescModal(true)}
                         className="w-full flex items-center justify-center gap-2 py-2 rounded-input border border-dashed border-rule text-xs lowercase text-muted hover:text-brass hover:border-rule2 transition-colors"
                     >
-                        <FileText size={14} /> view descriptions
+                        <FileText size={14} /> Lihat deskripsi
                     </button>
                 </div>
 
@@ -725,7 +725,7 @@ export default function ResultCard({ clip, index, jobId, durable, geminiApiKey, 
                             className={QUIET_BTN}
                         >
                             <Scissors size={16} className="text-muted group-hover:text-brass transition-colors shrink-0" />
-                            edit clip
+                            Edit klip
                         </button>
                     )}
 
@@ -735,7 +735,7 @@ export default function ResultCard({ clip, index, jobId, durable, geminiApiKey, 
                             className={QUIET_BTN}
                         >
                             <Crosshair size={16} className="text-muted group-hover:text-brass transition-colors shrink-0" />
-                            reframing
+                            Atur framing
                         </button>
                     )}
 
@@ -745,7 +745,7 @@ export default function ResultCard({ clip, index, jobId, durable, geminiApiKey, 
                         className={QUIET_BTN}
                     >
                         {isEditing ? <Loader2 size={16} className="animate-spin text-brass shrink-0" /> : <Wand2 size={16} className="text-muted group-hover:text-brass transition-colors shrink-0" />}
-                        {isEditing ? 'editing…' : 'auto edit'}
+                        {isEditing ? "Menyunting…" : "Edit otomatis"}
                     </button>
 
                     <button
@@ -754,7 +754,7 @@ export default function ResultCard({ clip, index, jobId, durable, geminiApiKey, 
                         className={QUIET_BTN}
                     >
                         {isSubtitling ? <Loader2 size={16} className="animate-spin text-brass shrink-0" /> : <Type size={16} className="text-muted group-hover:text-brass transition-colors shrink-0" />}
-                        {isSubtitling ? 'adding…' : 'subtitles'}
+                        {isSubtitling ? "Menambahkan…" : "Teks video"}
                     </button>
 
                     <button
@@ -763,7 +763,7 @@ export default function ResultCard({ clip, index, jobId, durable, geminiApiKey, 
                         className={QUIET_BTN}
                     >
                         {isHooking ? <Loader2 size={16} className="animate-spin text-brass shrink-0" /> : <Wand2 size={16} className="text-muted group-hover:text-brass transition-colors shrink-0" />}
-                        {isHooking ? 'saving…' : 'edit hook'}
+                        {isHooking ? "Menyimpan…" : "Edit judul pembuka"}
                     </button>
 
                     <button
@@ -780,7 +780,7 @@ export default function ResultCard({ clip, index, jobId, durable, geminiApiKey, 
                         className={`${QUIET_BTN}${onEditClip ? ' col-span-2' : ''}`}
                     >
                         <Download size={16} className="text-muted group-hover:text-brass transition-colors shrink-0" />
-                        {downloadPct === null ? 'download' : `downloading ${downloadPct}%`}
+                        {downloadPct === null ? "Unduh" : `Mengunduh ${downloadPct}%`}
                     </button>
                 </div>
             </div>
@@ -789,33 +789,33 @@ export default function ResultCard({ clip, index, jobId, durable, geminiApiKey, 
             <Modal
                 isOpen={showDescModal}
                 onClose={() => setShowDescModal(false)}
-                eyebrow="GENERATED COPY"
-                title="descriptions"
+                eyebrow="TEKS HASIL AI"
+                title="Deskripsi"
                 size="md"
             >
                 <div className="space-y-4">
                     <div>
                         <div className="flex items-center justify-between gap-2 mb-1.5">
-                            <label className="eyebrow">YOUTUBE TITLE</label>
+                            <label className="eyebrow">JUDUL YOUTUBE</label>
                             <button
                                 onClick={() => handleCopy('youtube', clip.video_title_for_youtube_short || "Viral Short Video")}
-                                aria-label="copy youtube title"
+                                aria-label="Salin judul YouTube"
                                 className="p-1 rounded-full text-muted hover:text-brass transition-colors shrink-0"
                             >
                                 {copied === 'youtube' ? <Check size={14} className="text-ok" /> : <Copy size={14} />}
                             </button>
                         </div>
                         <p className="text-sm text-ink2 select-all break-words bg-paper rounded-input p-3 border border-rule">
-                            {clip.video_title_for_youtube_short || "Viral Short Video"}
+                            {clip.video_title_for_youtube_short || "Video pendek"}
                         </p>
                     </div>
 
                     <div>
                         <div className="flex items-center justify-between gap-2 mb-1.5">
-                            <label className="eyebrow">TIKTOK · IG CAPTION</label>
+                            <label className="eyebrow">KETERANGAN TIKTOK · IG</label>
                             <button
                                 onClick={() => handleCopy('caption', clip.video_description_for_tiktok || clip.video_description_for_instagram)}
-                                aria-label="copy caption"
+                                aria-label="Salin keterangan"
                                 className="p-1 rounded-full text-muted hover:text-brass transition-colors shrink-0"
                             >
                                 {copied === 'caption' ? <Check size={14} className="text-ok" /> : <Copy size={14} />}

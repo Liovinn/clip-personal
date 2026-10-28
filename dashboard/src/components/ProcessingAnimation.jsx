@@ -109,7 +109,7 @@ const ProcessingAnimation = ({ media, isComplete, syncedTime, isSyncedPlaying, s
             className={`w-full h-full ${isSyncedPlaying ? '' : 'pointer-events-none scale-110'}`}
             // Add enablejsapi=1 for postMessage control
             src={`https://www.youtube.com/embed/${videoSrc}?autoplay=1&mute=1&controls=0&loop=1&playlist=${videoSrc}&modestbranding=1&showinfo=0&rel=0&enablejsapi=1`}
-            title="Processing Video"
+            title="Memproses video"
             frameBorder="0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           />
@@ -150,13 +150,13 @@ const ProcessingAnimation = ({ media, isComplete, syncedTime, isSyncedPlaying, s
               {isComplete
                 ? <CheckCircle size={14} className="shrink-0" />
                 : <Scan size={14} className="shrink-0" />}
-              <span className="truncate">{isComplete ? 'Analysis Complete' : 'Scanning Content...'}</span>
+              <span className="truncate">{isComplete ? "Analisis selesai" : "Menganalisis konten…"}</span>
             </div>
             {/* Carries nothing the left pill doesn't; it is the first thing to
                 go when there is no room. */}
             {!isComplete && (
               <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 bg-black/70 rounded-full readout shrink-0">
-                VIRAL_DETECTION: ACTIVE
+                DETEKSI MOMEN: AKTIF
               </div>
             )}
           </div>
@@ -179,7 +179,7 @@ const ProcessingAnimation = ({ media, isComplete, syncedTime, isSyncedPlaying, s
        {/* Synced Playing Indicator */}
        {isSyncedPlaying && (
            <div className="absolute top-2.5 right-2.5 sm:top-4 sm:right-4 z-30 badge-brass bg-black/70 animate-pulse">
-               <Activity size={12} /> Live Sync
+               <Activity size={12} /> Sinkronisasi langsung
            </div>
        )}
 
@@ -187,8 +187,8 @@ const ProcessingAnimation = ({ media, isComplete, syncedTime, isSyncedPlaying, s
       {!isSyncedPlaying && !isComplete && (
           <div className="hidden sm:flex absolute bottom-0 left-0 right-0 p-4 bg-black/70 z-30 justify-between items-end border-t border-rule">
               <div className="readout text-brass space-y-1">
-                 <div className="flex items-center gap-2"><Activity size={10} className="animate-pulse" /> {'>'} ANALYSIS_THREAD_01: ACTIVE</div>
-                 <div className="flex items-center gap-2"><Radio size={10} /> {'>'} AUDIO_TRANSCRIPT: PROCESSING</div>
+                 <div className="flex items-center gap-2"><Activity size={10} className="animate-pulse" /> {'>'} ANALISIS VIDEO: AKTIF</div>
+                 <div className="flex items-center gap-2"><Radio size={10} /> {'>'} TRANSKRIP AUDIO: DIPROSES</div>
               </div>
               <div className="flex gap-1">
                  <div className="w-1 h-3 bg-brass opacity-40 animate-[pulse_0.5s_infinite]"></div>
