@@ -913,7 +913,6 @@ function App() {
         <header className="clipedit-topbar ce-header border-b border-rule shrink-0 z-10">
           <div className="ce-header-brand">
             <a href="#app" onClick={() => goToTab('dashboard')} className="clipedit-wordmark">Clipedit</a>
-            <span className="ce-brand-caption">Video to clips</span>
             {status !== 'idle' && (
               <button
                 onClick={handleReset}
@@ -951,42 +950,21 @@ function App() {
               </button>
             )}
             {billingEnabled && isSignedIn && <ProfileMenu onUpgrade={isManaged ? openUpsell : null} />}
-
-            {/* Hidden below sm: the standing banner underneath already says the
-                same thing, and two warnings in a 360px header is just noise. */}
-            {keysMissing && (
-              <button
-                onClick={() => (billingEnabled && !isSignedIn ? setShowLogin(true) : goToTab('settings'))}
-                className="badge-warn hover:brightness-125 transition-all hidden sm:inline-flex"
-                title="Configure your Gemini API key"
-              >
-                <AlertTriangle size={12} />
-                <span className="hidden md:inline">
-                  Gemini API Key Missing
-                </span>
-                <span className="md:hidden">keys missing</span>
-              </button>
-            )}
           </div>
         </header>
 
         {/* Persistent Missing Keys Banner — visible on every screen */}
         {keysMissing && activeTab !== 'settings' && (
-          <div className="mx-3 sm:mx-6 mt-3 px-3.5 sm:px-4 py-3 bg-paper2 border border-rule rounded-card flex flex-wrap items-center justify-between gap-2.5 sm:gap-4 shrink-0 animate-fade">
-            <div className="flex items-start sm:items-center gap-2.5 sm:gap-3 text-sm text-ink2 min-w-0 flex-1">
-              <KeyRound size={16} className="shrink-0 text-warn mt-0.5 sm:mt-0" />
-              <div className="min-w-0">
-                <span className="font-medium text-ink">Gemini API key missing.</span>{' '}
-                <span className="text-muted">
-                  Set your Gemini API key to generate clips.
-                </span>
-              </div>
+          <div className="ce-connection-notice shrink-0 animate-fade">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <KeyRound size={15} className="shrink-0" />
+              <p>Connect Gemini to start creating clips.</p>
             </div>
             <button
               onClick={() => goToTab('settings')}
-              className="btn-quiet px-3 py-1.5 text-xs shrink-0 w-full sm:w-auto"
+              className="ce-notice-action shrink-0"
             >
-              Go to Settings
+              Add API key <ChevronDown size={13} className="-rotate-90" />
             </button>
           </div>
         )}
@@ -1017,11 +995,10 @@ function App() {
 
           {/* Clip generator settings */}
           {activeTab === 'settings' && (
-            <div className="h-full overflow-y-auto p-4 sm:p-8 max-w-2xl mx-auto animate-fade">
-              <div className="mb-8">
-                <p className="eyebrow mb-1.5">02 · SETTINGS</p>
-                <h1 className="font-display lowercase text-2xl text-ink">Clip generator settings</h1>
-                <p className="text-sm text-muted mt-3">Generate clips from a video URL or an uploaded file.</p>
+            <div className="ce-settings h-full overflow-y-auto custom-scrollbar animate-fade">
+              <div className="ce-page-heading">
+                <h1>Settings</h1>
+                <p>Manage your connection for clip generation.</p>
               </div>
               {billingEnabled ? (
                 <div className="card p-6">
@@ -1040,15 +1017,9 @@ function App() {
           {activeTab === 'dashboard' && status === 'idle' && (
             <div className="clipedit-start h-full overflow-y-auto custom-scrollbar animate-fade">
               <div className="ce-start-layout">
-                <section className="ce-intro">
-                  <p className="clipedit-kicker"><span aria-hidden="true" /> YOUR CLIPPING WORKSPACE</p>
-                  <h1 className="clipedit-headline">From long-form<br /><span>to your next clip.</span></h1>
-                  <p className="clipedit-description">Find the highlights in your videos. Add captions, adjust the framing, and export clips ready to share.</p>
-                  <ol className="ce-workflow">
-                    <li><span className="ce-step-number">01</span><div><h2>Bring your video</h2><p>Paste a video URL or upload a file.</p></div></li>
-                    <li><span className="ce-step-number">02</span><div><h2>Find the moments</h2><p>AI selects highlights and creates your clips.</p></div></li>
-                    <li><span className="ce-step-number">03</span><div><h2>Make them yours</h2><p>Preview, refine, and download your results.</p></div></li>
-                  </ol>
+                <section className="ce-page-heading">
+                  <h1>Create clips</h1>
+                  <p>Find the best moments in your video. Make them ready to share.</p>
                 </section>
                 <MediaInput onProcess={handleProcess} isProcessing={status === 'processing'} />
               </div>

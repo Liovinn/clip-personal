@@ -18,27 +18,34 @@ export default function KeyInput({ onKeySet, savedKey }) {
     };
 
     return (
-        <div className="card p-4 sm:p-6 mb-8 animate-fade">
+        <div className="ce-key-card card animate-fade">
             <div className="flex items-center gap-3 mb-4">
                 <div className="p-2 bg-paper3 rounded-input text-brass">
                     <Key size={18} />
                 </div>
-                <h2 className="font-display lowercase text-lg text-ink">Gemini API Key</h2>
+                <h2 className="text-sm font-medium text-ink">Gemini API key</h2>
             </div>
-
+            <p className="ce-key-description">Connect your Gemini account to find highlights and generate clips.</p>
+            <label htmlFor="clipedit-gemini-key" className="ce-field-label">API key</label>
             <div className="flex flex-col sm:flex-row gap-3">
                 <div className="relative sm:flex-1">
                     <input
+                        id="clipedit-gemini-key"
+                        aria-describedby="clipedit-key-help"
+                        autoComplete="off"
+                        spellCheck={false}
                         type={isVisible ? "text" : "password"}
                         value={key}
                         onChange={(e) => {
                             setKey(e.target.value);
                             setIsSaved(false);
                         }}
-                        placeholder="AIzaSy..."
+                        placeholder="Enter your Gemini API key"
                         className="input-field pr-12 font-mono"
                     />
                     <button
+                        type="button"
+                        aria-label={isVisible ? 'Hide API key' : 'Show API key'}
                         onClick={() => setIsVisible(!isVisible)}
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-ink transition-colors"
                     >
@@ -50,11 +57,11 @@ export default function KeyInput({ onKeySet, savedKey }) {
                     disabled={!key || isSaved}
                     className={isSaved ? 'badge-ok px-4 cursor-default' : 'btn-primary'}
                 >
-                    {isSaved ? <><Check size={14} /> Ready</> : 'Set Key'}
+                    {isSaved ? <><Check size={14} /> Saved</> : 'Save key'}
                 </button>
             </div>
-            <p className="mt-3 text-xs text-muted">
-                Your key is stored locally in your browser for convenience.
+            <p id="clipedit-key-help" className="mt-3 text-xs text-muted leading-relaxed">
+                Your key is saved in this browser and used when you generate clips.
                 <br />
                 <a
                     href="https://aistudio.google.com/app/apikey"
@@ -62,7 +69,7 @@ export default function KeyInput({ onKeySet, savedKey }) {
                     rel="noopener noreferrer"
                     className="text-brass hover:underline mt-1 inline-block"
                 >
-                    Get your free Gemini API Key here →
+                    Get a Gemini API key ↗
                 </a>
             </p>
         </div>

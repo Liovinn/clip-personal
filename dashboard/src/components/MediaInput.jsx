@@ -143,10 +143,9 @@ export default function MediaInput({ onProcess, isProcessing }) {
     };
 
     return (
-        <div className="clipedit-input-panel card p-4 sm:p-7 animate-fade">
+        <div className="clipedit-input-panel card animate-fade">
             <div className="clipedit-panel-heading">
-                <div><p className="clipedit-step-label">01 / SOURCE</p><h2>Add your video</h2></div>
-                <span className="clipedit-panel-hint">URL or file upload</span>
+                <h2>Source video</h2>
             </div>
             <div className="clipedit-source-tabs flex gap-2 mb-6" data-tutorial="source-tabs">
                 <button
@@ -158,7 +157,7 @@ export default function MediaInput({ onProcess, isProcessing }) {
                         }`}
                 >
                     <Upload size={16} className={`hidden sm:block ${mode === 'file' ? 'text-brass' : ''}`} />
-                    Upload File
+                    Upload file
                 </button>
                 {youtubeUrlEnabled && (
                     <button
@@ -181,9 +180,10 @@ export default function MediaInput({ onProcess, isProcessing }) {
                         <div className="relative">
                             <input
                                 type="url"
+                                aria-label="Video URL"
                                 value={url}
                                 onChange={(e) => setUrl(e.target.value)}
-                                placeholder="https://... paste a video link"
+                                placeholder="Paste a video link (https://...)"
                                 className="input-field pr-11"
                                 required
                             />
@@ -229,6 +229,7 @@ export default function MediaInput({ onProcess, isProcessing }) {
                                 <button
                                     type="button"
                                     onClick={() => setFile(null)}
+                                    aria-label="Remove selected video"
                                     className="p-1 text-muted hover:text-ink hover:bg-paper3 rounded-full transition-colors"
                                 >
                                     <X size={16} />
@@ -250,8 +251,8 @@ export default function MediaInput({ onProcess, isProcessing }) {
                                     className="hidden"
                                 />
                                 <Upload className="mx-auto mb-3 text-muted" size={18} />
-                                <p className="text-ink2 lowercase">Click to upload or drag and drop</p>
-                                <p className="readout mt-2">MP4, MOV up to 500MB · at least {MIN_SOURCE_SECONDS}s long</p>
+                                <p className="text-ink2"><span className="ce-upload-link">Choose a file</span> or drag it here</p>
+                                <p className="ce-upload-help">MP4, MOV · Up to 500 MB · At least {MIN_SOURCE_SECONDS} seconds</p>
                             </label>
                         )}
                     </div>
@@ -272,7 +273,8 @@ export default function MediaInput({ onProcess, isProcessing }) {
                                     key={f.value}
                                     type="button"
                                     onClick={() => setOutputFormat(f.value)}
-                                    className={`clipedit-format-option py-3 px-2 rounded-input border flex flex-col items-center gap-2 transition-colors
+                                    aria-pressed={active}
+                                    className={`clipedit-format-option rounded-input border transition-colors
                                         ${active ? 'is-selected border-[color:var(--color-accent)] text-ink' : 'border-rule2 text-muted hover:border-[color:var(--color-accent)]'}`}
                                 >
                                     {/* Aspect-ratio glyph */}
@@ -285,8 +287,7 @@ export default function MediaInput({ onProcess, isProcessing }) {
                                             backgroundColor: active ? 'color-mix(in srgb, var(--color-accent) 22%, transparent)' : 'transparent',
                                         }}
                                     />
-                                    <span className="block font-mono text-sm leading-none">{f.label}</span>
-                                    <span className="block text-[11px] sm:text-[10px] leading-tight text-center text-muted">{f.hint}</span>
+                                    <span className="ce-format-copy"><span className="ce-format-ratio">{f.label}</span><span className="ce-format-hint">{f.hint}</span></span>
                                 </button>
                             );
                         })}
@@ -298,10 +299,12 @@ export default function MediaInput({ onProcess, isProcessing }) {
                     <button
                         type="button"
                         onClick={() => setShowAdvanced((v) => !v)}
+                        aria-expanded={showAdvanced}
+                        aria-controls="clipedit-advanced-options"
                         className="flex items-center gap-1.5 text-xs text-muted hover:text-ink2 lowercase transition-colors"
                     >
                         <ChevronDown size={14} className={`transition-transform ${showAdvanced ? 'rotate-180' : ''}`} />
-                        advanced options
+                        Advanced options
                         {(targetClips || clipMinSeconds || clipMaxSeconds || !autoHook) && (
                             <span className="text-brass">·</span>
                         )}
@@ -309,10 +312,11 @@ export default function MediaInput({ onProcess, isProcessing }) {
                     {showAdvanced && (
                         /* Stacked on a phone: three number fields side by side leaves
                            ~100px each, which crushes both label and value. */
-                        <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-2 animate-fade">
+                        <div id="clipedit-advanced-options" className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-2 animate-fade">
                             <div>
-                                <p className="eyebrow mb-1.5">clips to aim for</p>
+                                <label htmlFor="clipedit-target-clips" className="eyebrow mb-1.5">Target clip count</label>
                                 <input
+                                    id="clipedit-target-clips"
                                     type="number" min="1" max="15" step="1"
                                     value={targetClips}
                                     onChange={(e) => setTargetClips(e.target.value)}
@@ -321,8 +325,9 @@ export default function MediaInput({ onProcess, isProcessing }) {
                                 />
                             </div>
                             <div>
-                                <p className="eyebrow mb-1.5">min length (s)</p>
+                                <label htmlFor="clipedit-min-length" className="eyebrow mb-1.5">Min length (seconds)</label>
                                 <input
+                                    id="clipedit-min-length"
                                     type="number" min="5" max="175" step="1"
                                     value={clipMinSeconds}
                                     onChange={(e) => setClipMinSeconds(e.target.value)}
@@ -331,8 +336,9 @@ export default function MediaInput({ onProcess, isProcessing }) {
                                 />
                             </div>
                             <div>
-                                <p className="eyebrow mb-1.5">max length (s)</p>
+                                <label htmlFor="clipedit-max-length" className="eyebrow mb-1.5">Max length (seconds)</label>
                                 <input
+                                    id="clipedit-max-length"
                                     type="number" min="10" max="180" step="1"
                                     value={clipMaxSeconds}
                                     onChange={(e) => setClipMaxSeconds(e.target.value)}
@@ -345,12 +351,12 @@ export default function MediaInput({ onProcess, isProcessing }) {
                                 material doesn't hold them. Leave blank to let it decide.
                             </p>
                             <div className="col-span-1 sm:col-span-3 flex flex-wrap items-center justify-between gap-3 pt-3 sm:pt-1 border-t border-rule">
-                                <span className="text-xs text-ink2">vertical layout</span>
+                                <span className="text-xs text-ink2">Vertical layout</span>
                                 <select
                                     value={layout}
                                     onChange={(e) => setLayout(e.target.value)}
                                     className="input-field !w-auto text-xs py-1.5"
-                                    aria-label="vertical layout"
+                                    aria-label="Vertical layout"
                                 >
                                     <option value="auto">Auto (AI picks per video)</option>
                                     <option value="split">Two speakers stacked</option>
@@ -366,10 +372,11 @@ export default function MediaInput({ onProcess, isProcessing }) {
                                         onChange={(e) => setAutoHook(e.target.checked)}
                                         className="w-4 h-4 shrink-0 accent-[var(--color-accent)] cursor-pointer"
                                     />
-                                    auto hook titles on clips
+                                    Auto hook titles on clips
                                 </label>
                                 {autoHook && (
                                     <select
+                                        aria-label="Hook title style"
                                         value={autoHookStyle}
                                         onChange={(e) => setAutoHookStyle(e.target.value)}
                                         className="input-field !w-auto text-xs py-1.5"
@@ -403,11 +410,11 @@ export default function MediaInput({ onProcess, isProcessing }) {
                     {isProcessing ? (
                         <>
                             <Loader2 size={16} className="animate-spin" />
-                            Processing Video...
+                            Processing video…
                         </>
                     ) : (
                         <>
-                            Generate Clips <ArrowRight size={17} />
+                            Generate clips <ArrowRight size={17} />
                         </>
                     )}
                 </button>

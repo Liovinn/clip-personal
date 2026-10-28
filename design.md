@@ -2,16 +2,25 @@
 
 ## Active fork: Clipedit studio
 
-The focused app uses a text-only **Clipedit** wordmark, navy/slate surfaces,
-blue accents (`#8ab4ff`) and Geist typography. A compact top bar contains only
-Clip generator and Settings. The desktop workspace places an introduction on
-the left and the video input panel on the right; phones use one column.
+The focused app uses a text-only **Clipedit** wordmark, neutral charcoal surfaces,
+a restrained lavender accent (`#b4a2ff`) and Geist typography. A compact top bar
+contains only Clip generator and Settings with an underline for the active view.
+Creation and Settings use a centered, shared 760px content column. The video
+source, output format, advanced controls and generation action form one panel.
+Use plain headings, sentence-case labels, subtle borders and consistent spacing.
+Avoid numbered section labels, marketing slogans, decorative steps, gradients,
+and duplicate connection warnings. A single quiet notice links to the API key.
 Settings contains only the Gemini connection. There are no promotional footer
 links or agent connectors. The app and browser tab use no brand icon.
 `src/clipedit.css`, `tokens.css` and matching Tailwind colors define the theme.
 
 These choices override the upstream theme and typography below. Video
 processing, model configuration and clip-generation request behavior are unchanged.
+
+Reference principles: [Linear's UI redesign](https://linear.app/now/how-we-redesigned-the-linear-ui)
+for alignment and visual hierarchy, and [Vercel Geist](https://vercel.com/geist/introduction)
+for consistent controls and surface contrast. These guide the interface rather
+than adding new product behavior.
 
 ## Upstream design reference
 

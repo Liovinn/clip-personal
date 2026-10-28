@@ -2,14 +2,14 @@
 
 :root {
   /* paper */
-  --color-paper: #0b1018;
-  --color-paper-2: #121b29;
-  --color-paper-3: #1c293c;
+  --color-paper: #101113;
+  --color-paper-2: #18191d;
+  --color-paper-3: #232429;
 
   /* ink */
-  --color-ink: #f2f6ff;
-  --color-ink-2: #cad6e7;
-  --color-muted: #8f9fb6;
+  --color-ink: #f5f5f7;
+  --color-ink-2: #d3d4db;
+  --color-muted: #a0a1ad;
 
   /* rules */
   --color-rule: rgb(255 255 255 / 0.08);
@@ -17,12 +17,12 @@
   --rule-blueprint: oklch(96% 0.006 262 / 0.04);
 
   /* accents */
-  --color-accent: #8ab4ff;
-  --color-accent-ink: #0d1d38;
+  --color-accent: #b4a2ff;
+  --color-accent-ink: #19122e;
   --color-accent-2: oklch(68% 0.16 18);
-  --color-glow: rgb(138 180 255 / 0.16);
+  --color-glow: rgb(180 162 255 / 0.16);
   --color-paper-emit: transparent;
-  --color-focus: #8ab4ff;
+  --color-focus: #b4a2ff;
 
   /* states */
   --color-ok: oklch(75% 0.11 150);
@@ -38,8 +38,8 @@
   --tracking-micro: 0.10em;
 
   /* geometry */
-  --radius-card: 18px;
-  --radius-input: 10px;
+  --radius-card: 12px;
+  --radius-input: 8px;
 
   /* motion */
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);

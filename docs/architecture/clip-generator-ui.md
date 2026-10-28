@@ -1,9 +1,12 @@
 # Clipedit interface
 
 Clipedit presents only the clip generator. The horizontal navigation contains
-Clip generator and Settings, on both desktop and mobile. The desktop start view
-uses a two-column introduction and video-input layout. Smaller screens stack
-those sections. The wordmark is text only and the palette uses navy and blue.
+Clip generator and Settings, on both desktop and mobile. The start view uses a
+centered creation panel with a plain heading. Settings shares the same content
+width. The wordmark is text only; neutral charcoal surfaces and a lavender
+accent replace the earlier navy marketing layout. Numbered section labels,
+the header tagline and decorative onboarding steps are removed. A single
+connection notice links to Settings when the Gemini key is missing.
 
 Settings contains the Gemini API key for self-hosted installs, or the existing
 managed-account status when billing is enabled. Social connections, ElevenLabs,

@@ -9,22 +9,22 @@ export default {
       colors: {
         // Clipedit studio — values mirror tokens.css (kept literal so
         // Tailwind alpha modifiers like bg-brass/10 compile)
-        paper: "rgb(11 16 24 / <alpha-value>)",
-        paper2: "rgb(18 27 41 / <alpha-value>)",
-        paper3: "rgb(28 41 60 / <alpha-value>)",
-        ink: "rgb(242 246 255 / <alpha-value>)",
-        ink2: "rgb(202 214 231 / <alpha-value>)",
-        muted: "rgb(143 159 182 / <alpha-value>)",
-        brass: "rgb(138 180 255 / <alpha-value>)",
-        brassink: "rgb(13 29 56 / <alpha-value>)",
+        paper: "rgb(16 17 19 / <alpha-value>)",
+        paper2: "rgb(24 25 29 / <alpha-value>)",
+        paper3: "rgb(35 36 41 / <alpha-value>)",
+        ink: "rgb(245 245 247 / <alpha-value>)",
+        ink2: "rgb(211 212 219 / <alpha-value>)",
+        muted: "rgb(160 161 173 / <alpha-value>)",
+        brass: "rgb(180 162 255 / <alpha-value>)",
+        brassink: "rgb(25 18 46 / <alpha-value>)",
         coral: "oklch(68% 0.16 18 / <alpha-value>)",
         ok: "oklch(75% 0.11 150 / <alpha-value>)",
         warn: "oklch(78% 0.14 75 / <alpha-value>)",
         danger: "oklch(66% 0.18 25 / <alpha-value>)",
         // legacy aliases so untouched files degrade gracefully
-        background: "rgb(11 16 24 / <alpha-value>)",
-        surface: "rgb(18 27 41 / <alpha-value>)",
-        primary: "rgb(138 180 255 / <alpha-value>)",
+        background: "rgb(16 17 19 / <alpha-value>)",
+        surface: "rgb(24 25 29 / <alpha-value>)",
+        primary: "rgb(180 162 255 / <alpha-value>)",
         accent: "oklch(68% 0.16 18 / <alpha-value>)",
       },
       fontFamily: {
